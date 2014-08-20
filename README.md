@@ -7,7 +7,7 @@ So you can reuse existing data definitions in .proto for BigQuery with this plug
 
 Instalaltion
 -------------
- go get code.google.com/p/protoc-gen-bq-schema
+ go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
 
 Usage
 ------
