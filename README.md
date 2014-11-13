@@ -27,7 +27,7 @@ Suppose that we have the following foo.proto.
 
 ```protobuf
 package foo;
-import "bq_table_name.proto"
+import "bq_table_name.proto";
 
 message Bar {
   option (gen_bq_schema.table_name) = "bar_table";
