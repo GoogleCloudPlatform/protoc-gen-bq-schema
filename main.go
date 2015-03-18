@@ -30,10 +30,10 @@ import (
 	"path"
 	"strings"
 
-	"code.google.com/p/goprotobuf/proto"
-	descriptor "code.google.com/p/goprotobuf/protoc-gen-go/descriptor"
-	plugin "code.google.com/p/goprotobuf/protoc-gen-go/plugin"
 	"github.com/golang/glog"
+	"github.com/golang/protobuf/proto"
+	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
 var (

@@ -19,9 +19,9 @@ import (
 	"reflect"
 	"testing"
 
-	"code.google.com/p/goprotobuf/proto"
+	"github.com/golang/protobuf/proto"
 
-	plugin "code.google.com/p/goprotobuf/protoc-gen-go/plugin"
+	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
 // schema is an internal representation of generated BigQuery schema

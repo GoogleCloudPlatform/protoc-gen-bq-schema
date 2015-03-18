@@ -14,9 +14,9 @@
 
 BQ_PLUGIN=bin/protoc-gen-bq-schema
 GO_PLUGIN=bin/protoc-gen-go
-PROTOC_GEN_GO_PKG=code.google.com/p/goprotobuf/protoc-gen-go
+PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog
-PROTO_PKG=code.google.com/p/goprotobuf/proto
+PROTO_PKG=github.com/golang/protobuf/proto
 PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
 
 install: $(BQ_PLUGIN)

@@ -1,7 +1,7 @@
 # protoc-gen-bq-schema
 
 
-protoc-gen-bq-schema is a plugin for [ProtocolBuffer compiler](https://code.google.com/p/protobuf/).
+protoc-gen-bq-schema is a plugin for [ProtocolBuffer compiler](https://github.com/google/protobuf).
 It converts messages written in .proto format into schema files in JSON for BigQuery.
 So you can reuse existing data definitions in .proto for BigQuery with this plugin.
 
