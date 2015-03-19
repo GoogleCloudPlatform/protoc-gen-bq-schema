@@ -22,6 +22,8 @@ import "google/protobuf/descriptor.proto";
 extend google.protobuf.MessageOptions {
   // Sepcified a name of table in BigQuery for the message.
   // Indicates the message is a type of record to be stored into BigQuery.
-  optional string table_name = 50000;
+  //
+  // The field number is a globally unique id for this option, assigned by
+  // protobuf-global-extension-registry@google.com
+  optional string table_name = 1021;
 }
-

@@ -23,9 +23,9 @@ var _ = math.Inf
 var E_TableName = &proto.ExtensionDesc{
 	ExtendedType:  (*google_protobuf.MessageOptions)(nil),
 	ExtensionType: (*string)(nil),
-	Field:         50000,
+	Field:         1021,
 	Name:          "gen_bq_schema.table_name",
-	Tag:           "bytes,50000,opt,name=table_name",
+	Tag:           "bytes,1021,opt,name=table_name",
 }
 
 func init() {
