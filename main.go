@@ -163,7 +163,7 @@ var (
 		".google.protobuf.FloatValue":  "FLOAT",
 		".google.protobuf.BoolValue":   "BOOLEAN",
 		".google.protobuf.StringValue": "STRING",
-		".google.protobuf.BytesValue":  "STRING",
+		".google.protobuf.BytesValue":  "BYTES",
 		".google.protobuf.Duration":    "STRING",
 		".google.protobuf.Timestamp":   "TIMESTAMP",
 	}
@@ -183,7 +183,7 @@ var (
 		descriptor.FieldDescriptorProto_TYPE_SINT64:   "INTEGER",
 
 		descriptor.FieldDescriptorProto_TYPE_STRING: "STRING",
-		descriptor.FieldDescriptorProto_TYPE_BYTES:  "STRING",
+		descriptor.FieldDescriptorProto_TYPE_BYTES:  "BYTES",
 		descriptor.FieldDescriptorProto_TYPE_ENUM:   "STRING",
 
 		descriptor.FieldDescriptorProto_TYPE_BOOL: "BOOLEAN",

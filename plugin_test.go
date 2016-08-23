@@ -258,7 +258,7 @@ func TestTypes(t *testing.T) {
 				{ "name": "f", "type": "FLOAT", "mode": "NULLABLE" },
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
-				{ "name": "bytes", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
 				{ "name": "enum1", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "enum2", "type": "STRING", "mode": "NULLABLE" },
 				{
@@ -365,7 +365,7 @@ func TestWellKnownTypes(t *testing.T) {
 				{ "name": "f", "type": "FLOAT", "mode": "NULLABLE" },
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
-				{ "name": "bytes", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
 				{ "name": "du", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "t", "type": "TIMESTAMP", "mode": "NULLABLE" }
 			]`,
