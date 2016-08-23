@@ -297,6 +297,81 @@ func TestTypes(t *testing.T) {
 		})
 }
 
+// TestWellKnownTypes tests the generator with various well-known message types
+// which have custom JSON serialization.
+func TestWellKnownTypes(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field <
+						name: "i32" number: 1 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.Int32Value"
+					>
+					field <
+						name: "i64" number: 2 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.Int64Value"
+					>
+					field <
+						name: "ui32" number: 3 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.UInt32Value"
+					>
+					field <
+						name: "ui64" number: 4 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.UInt64Value"
+					>
+					field <
+						name: "d" number: 5 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.DoubleValue"
+					>
+					field <
+						name: "f" number: 6 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.FloatValue"
+					>
+					field <
+						name: "bool" number: 7 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.BoolValue"
+					>
+					field <
+						name: "str" number: 8 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.StringValue"
+					>
+					field <
+						name: "bytes" number: 9 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.BytesValue"
+					>
+					field <
+						name: "du" number: 10 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.Duration"
+					>
+					field <
+						name: "t" number: 11 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".google.protobuf.Timestamp"
+					>
+					options < [gen_bq_schema.table_name]: "foo_table" >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "i32", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "i64", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "ui32", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "ui64", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "d", "type": "FLOAT", "mode": "NULLABLE" },
+				{ "name": "f", "type": "FLOAT", "mode": "NULLABLE" },
+				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
+				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "bytes", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "du", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "t", "type": "TIMESTAMP", "mode": "NULLABLE" }
+			]`,
+		})
+}
+
 // TestModes tests the generator with different label values.
 func TestModes(t *testing.T) {
 	testConvert(t, `

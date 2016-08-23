@@ -153,59 +153,73 @@ func (pkg *ProtoPackage) relativelyLookupPackage(name string) (*ProtoPackage, bo
 	return pkg, true
 }
 
+var (
+	typeFromWKT = map[string]string{
+		".google.protobuf.Int32Value":  "INTEGER",
+		".google.protobuf.Int64Value":  "INTEGER",
+		".google.protobuf.UInt32Value": "INTEGER",
+		".google.protobuf.UInt64Value": "INTEGER",
+		".google.protobuf.DoubleValue": "FLOAT",
+		".google.protobuf.FloatValue":  "FLOAT",
+		".google.protobuf.BoolValue":   "BOOLEAN",
+		".google.protobuf.StringValue": "STRING",
+		".google.protobuf.BytesValue":  "STRING",
+		".google.protobuf.Duration":    "STRING",
+		".google.protobuf.Timestamp":   "TIMESTAMP",
+	}
+	typeFromFieldType = map[descriptor.FieldDescriptorProto_Type]string{
+		descriptor.FieldDescriptorProto_TYPE_DOUBLE: "FLOAT",
+		descriptor.FieldDescriptorProto_TYPE_FLOAT:  "FLOAT",
+
+		descriptor.FieldDescriptorProto_TYPE_INT64:    "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_UINT64:   "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_INT32:    "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_UINT32:   "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_FIXED64:  "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_FIXED32:  "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_SFIXED32: "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_SFIXED64: "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_SINT32:   "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_SINT64:   "INTEGER",
+
+		descriptor.FieldDescriptorProto_TYPE_STRING: "STRING",
+		descriptor.FieldDescriptorProto_TYPE_BYTES:  "STRING",
+		descriptor.FieldDescriptorProto_TYPE_ENUM:   "STRING",
+
+		descriptor.FieldDescriptorProto_TYPE_BOOL: "BOOLEAN",
+
+		descriptor.FieldDescriptorProto_TYPE_GROUP:   "RECORD",
+		descriptor.FieldDescriptorProto_TYPE_MESSAGE: "RECORD",
+	}
+
+	modeFromFieldLabel = map[descriptor.FieldDescriptorProto_Label]string{
+		descriptor.FieldDescriptorProto_LABEL_OPTIONAL: "NULLABLE",
+		descriptor.FieldDescriptorProto_LABEL_REQUIRED: "REQUIRED",
+		descriptor.FieldDescriptorProto_LABEL_REPEATED: "REPEATED",
+	}
+)
+
 func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msg *descriptor.DescriptorProto) (*Field, error) {
 	field := &Field{
 		Name: desc.GetName(),
 	}
 
-	switch desc.GetType() {
-	case descriptor.FieldDescriptorProto_TYPE_DOUBLE,
-		descriptor.FieldDescriptorProto_TYPE_FLOAT:
-		field.Type = "FLOAT"
-
-	case descriptor.FieldDescriptorProto_TYPE_INT64,
-		descriptor.FieldDescriptorProto_TYPE_UINT64,
-		descriptor.FieldDescriptorProto_TYPE_INT32,
-		descriptor.FieldDescriptorProto_TYPE_UINT32,
-		descriptor.FieldDescriptorProto_TYPE_FIXED64,
-		descriptor.FieldDescriptorProto_TYPE_FIXED32,
-		descriptor.FieldDescriptorProto_TYPE_SFIXED32,
-		descriptor.FieldDescriptorProto_TYPE_SFIXED64,
-		descriptor.FieldDescriptorProto_TYPE_SINT32,
-		descriptor.FieldDescriptorProto_TYPE_SINT64:
-		field.Type = "INTEGER"
-
-	case descriptor.FieldDescriptorProto_TYPE_STRING,
-		descriptor.FieldDescriptorProto_TYPE_BYTES,
-		descriptor.FieldDescriptorProto_TYPE_ENUM:
-		field.Type = "STRING"
-
-	case descriptor.FieldDescriptorProto_TYPE_BOOL:
-		field.Type = "BOOLEAN"
-
-	case descriptor.FieldDescriptorProto_TYPE_GROUP,
-		descriptor.FieldDescriptorProto_TYPE_MESSAGE:
-		field.Type = "RECORD"
-
-	default:
-		return nil, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
-	}
-
-	switch desc.GetLabel() {
-	case descriptor.FieldDescriptorProto_LABEL_OPTIONAL:
-		field.Mode = "NULLABLE"
-
-	case descriptor.FieldDescriptorProto_LABEL_REQUIRED:
-		field.Mode = "REQUIRED"
-
-	case descriptor.FieldDescriptorProto_LABEL_REPEATED:
-		field.Mode = "REPEATED"
-
-	default:
+	var ok bool
+	field.Mode, ok = modeFromFieldLabel[desc.GetLabel()]
+	if !ok {
 		return nil, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
 	}
 
+	field.Type, ok = typeFromFieldType[desc.GetType()]
+	if !ok {
+		return nil, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
+	}
+
 	if field.Type != "RECORD" {
+		return field, nil
+	}
+	if t, ok := typeFromWKT[desc.GetTypeName()]; ok {
+		field.Type = t
 		return field, nil
 	}
 
