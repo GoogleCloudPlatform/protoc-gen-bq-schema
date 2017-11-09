@@ -30,6 +30,8 @@ import (
 	"path"
 	"strings"
 
+	"./protos"
+
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
 	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -250,10 +252,10 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		if options == nil {
 			continue
 		}
-		if !proto.HasExtension(options, E_TableName) {
+		if !proto.HasExtension(options, protos.E_TableName) {
 			continue
 		}
-		optionValue, err := proto.GetExtension(options, E_TableName)
+		optionValue, err := proto.GetExtension(options, protos.E_TableName)
 		if err != nil {
 			return nil, err
 		}

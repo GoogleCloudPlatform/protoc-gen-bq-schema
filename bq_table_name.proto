@@ -15,7 +15,7 @@
 syntax = "proto2";
 package gen_bq_schema;
 
-option go_package = "main";
+option go_package = "protos";
 
 import "google/protobuf/descriptor.proto";
 
