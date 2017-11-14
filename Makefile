@@ -1,11 +1,11 @@
 # Copyright 2014 Google Inc. All rights reserved.
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,7 +25,7 @@ $(BQ_PLUGIN): bq_table_name.pb.go goprotobuf glog
 	go build -o $@
 
 bq_table_name.pb.go: bq_table_name.proto $(GO_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=bin/protoc-gen-go --go_out=$(PKGMAP):. bq_table_name.proto
+	protoc -I. -Ivendor/protobuf --plugin=bin/protoc-gen-go --go_out=$(PKGMAP):protos bq_table_name.proto
 
 goprotobuf:
 	go get $(PROTO_PKG)
