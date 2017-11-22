@@ -1,0 +1,36 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto2";
+package gen_bq_schema;
+
+option go_package = "protos";
+
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.MessageOptions {
+  // Flag to specify that a field should be marked as 'REQUIRED' when
+  // used to generate schema for BigQuery.
+  //
+  // TODO: register with protobuf-global-extension-registry@google.com
+  optional bool require = 1022;
+
+  // Optionally override whatever type is resolved by the schema
+  // generator. This is useful, for example, to store epoch timestamps
+  // with the underlying 'TIMESTAMP' type, when normally, they would
+  // be structured as 'INTEGER' fields.
+  //
+  // TODO: register with protobuf-global-extension-registry@google.com
+  optional string type_override = 1023;
+}

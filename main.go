@@ -207,6 +207,32 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
 	}
 
+        fieldOptions := desc.GetOptions()
+        if options != nil {
+          // is there is a 'required' annotation value on this field?
+          if proto.hasExtension(options.E_Require) {
+            requireValue, err := proto.GetExtension(options, protos.E_Require)
+            if err == nil {
+              doRequire := *requireValue.(*bool)
+              if (doRequire) {
+                // annotations are telling us to force-require this field, so do it
+                field.Mode = "REQUIRED"
+              }
+            }
+          }
+
+          // is there a type override value on this field?
+          if proto.hasExtension(options.E_TypeOverride) {
+            typeValue, err := proto.GetExtension(options, proto.E_TypeOverride)
+            if err == nil {
+              typeOverride := *typeValue.(*string)
+              if len(typeOverride) > 0 {
+                field.Type = typeOverride
+              }
+            }
+          }
+        }
+
 	if field.Type != "RECORD" {
 		return field, nil
 	}

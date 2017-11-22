@@ -6,6 +6,7 @@ Package protos is a generated protocol buffer package.
 
 It is generated from these files:
 	bq_table_name.proto
+	bq_field.proto
 
 It has these top-level messages:
 */

@@ -21,11 +21,11 @@ PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
 
 install: $(BQ_PLUGIN)
 
-$(BQ_PLUGIN): bq_table_name.pb.go goprotobuf glog
+$(BQ_PLUGIN): bq_table_name.pb.go bq_field.pb.go goprotobuf glog
 	go build -o $@
 
-bq_table_name.pb.go: bq_table_name.proto $(GO_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=bin/protoc-gen-go --go_out=$(PKGMAP):protos bq_table_name.proto
+bq_table_name.pb.go bq_field.pb.go: bq_table_name.proto bq_field.proto $(GO_PLUGIN)
+	protoc -I. -Ivendor/protobuf --plugin=bin/protoc-gen-go --go_out=$(PKGMAP):protos bq_table_name.proto bq_field.proto
 
 goprotobuf:
 	go get $(PROTO_PKG)
@@ -45,6 +45,6 @@ distclean clean:
 	rm -f $(GO_PLUGIN) $(BQ_PLUGIN)
 
 realclean: distclean
-	rm -f bq_table_name.pb.go
+	rm -f bq_table_name.pb.go bq_field.pb.go
 
 .PHONY: goprotobuf glog
