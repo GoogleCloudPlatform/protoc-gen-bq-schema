@@ -19,7 +19,7 @@ option go_package = "protos";
 
 import "google/protobuf/descriptor.proto";
 
-extend google.protobuf.MessageOptions {
+extend google.protobuf.FieldOptions {
   // Flag to specify that a field should be marked as 'REQUIRED' when
   // used to generate schema for BigQuery.
   //
