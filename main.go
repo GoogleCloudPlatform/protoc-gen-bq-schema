@@ -52,6 +52,7 @@ type Field struct {
 	Name   string   `json:"name"`
 	Type   string   `json:"type"`
 	Mode   string   `json:"mode"`
+        Description  string  `json:"description,omitempty"`
 	Fields []*Field `json:"fields,omitempty"`
 }
 
@@ -240,6 +241,17 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
               if (doIgnore) {
                 // return nil for both the field and err, which should skip the field below
                 return nil, nil
+              }
+            }
+          }
+
+          // is there a field description?
+          if proto.HasExtension(fieldOptions, protos.E_Description) {
+            descVal, err := proto.GetExtension(fieldOptions, protos.E_Description)
+            if err == nil {
+              fieldDescription := *descVal.(*string)
+              if len(fieldDescription) > 0 {
+                field.Description = fieldDescription
               }
             }
           }
