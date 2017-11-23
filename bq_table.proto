@@ -26,4 +26,9 @@ extend google.protobuf.MessageOptions {
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
   string table_name = 1021;
+
+  // Description for a table in BigQuery.
+  //
+  // TODO: register with protobuf-global-extension-registry@google.com
+  string table_description = 1026;
 }

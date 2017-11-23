@@ -42,5 +42,5 @@ extend google.protobuf.FieldOptions {
   // Set the description for a field in BigQuery schema.
   //
   // TODO: register with protobuf-global-extension-registry@google.com
-  optional string description = 1025;
+  string description = 1025;
 }
