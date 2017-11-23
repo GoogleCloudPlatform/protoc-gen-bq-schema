@@ -33,4 +33,9 @@ extend google.protobuf.FieldOptions {
   //
   // TODO: register with protobuf-global-extension-registry@google.com
   optional string type_override = 1023;
+
+  // Optionally omit a field from BigQuery schema.
+  //
+  // TODO: register with protobuf-global-extension-registry@google.com
+  optional bool ignore = 1024;
 }
