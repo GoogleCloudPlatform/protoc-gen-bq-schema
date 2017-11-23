@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto2";
+syntax = "proto3";
 package gen_bq_schema;
 
 option go_package = "protos";
@@ -24,7 +24,7 @@ extend google.protobuf.FieldOptions {
   // used to generate schema for BigQuery.
   //
   // TODO: register with protobuf-global-extension-registry@google.com
-  optional bool require = 1022;
+  bool require = 1022;
 
   // Optionally override whatever type is resolved by the schema
   // generator. This is useful, for example, to store epoch timestamps
@@ -32,12 +32,12 @@ extend google.protobuf.FieldOptions {
   // be structured as 'INTEGER' fields.
   //
   // TODO: register with protobuf-global-extension-registry@google.com
-  optional string type_override = 1023;
+  string type_override = 1023;
 
   // Optionally omit a field from BigQuery schema.
   //
   // TODO: register with protobuf-global-extension-registry@google.com
-  optional bool ignore = 1024;
+  bool ignore = 1024;
 
   // Set the description for a field in BigQuery schema.
   //

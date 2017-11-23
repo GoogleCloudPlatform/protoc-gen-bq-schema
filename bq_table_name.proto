@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto2";
+syntax = "proto3";
 package gen_bq_schema;
 
 option go_package = "protos";
@@ -25,5 +25,5 @@ extend google.protobuf.MessageOptions {
   //
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
-  optional string table_name = 1021;
+  string table_name = 1021;
 }
