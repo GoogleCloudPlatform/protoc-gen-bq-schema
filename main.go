@@ -208,10 +208,10 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	}
 
         fieldOptions := desc.GetOptions()
-        if options != nil {
+        if fieldOptions != nil {
           // is there is a 'required' annotation value on this field?
-          if proto.hasExtension(options.E_Require) {
-            requireValue, err := proto.GetExtension(options, protos.E_Require)
+          if proto.HasExtension(fieldOptions, protos.E_Require) {
+            requireValue, err := proto.GetExtension(fieldOptions, protos.E_Require)
             if err == nil {
               doRequire := *requireValue.(*bool)
               if (doRequire) {
@@ -222,8 +222,8 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
           }
 
           // is there a type override value on this field?
-          if proto.hasExtension(options.E_TypeOverride) {
-            typeValue, err := proto.GetExtension(options, proto.E_TypeOverride)
+          if proto.HasExtension(fieldOptions, protos.E_TypeOverride) {
+            typeValue, err := proto.GetExtension(fieldOptions, protos.E_TypeOverride)
             if err == nil {
               typeOverride := *typeValue.(*string)
               if len(typeOverride) > 0 {
