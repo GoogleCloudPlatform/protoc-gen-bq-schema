@@ -231,6 +231,18 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
               }
             }
           }
+
+          // is there an ignore annotation on this field?
+          if proto.HasExtension(fieldOptions, protos.E_Ignore) {
+            ignoreValue, err := proto.GetExtension(fieldOptions, protos.E_Ignore)
+            if err == nil {
+              doIgnore := *ignoreValue.(*bool)
+              if (doIgnore) {
+                // return nil for both the field and err, which should skip the field below
+                return nil, nil
+              }
+            }
+          }
         }
 
 	if field.Type != "RECORD" {
@@ -260,7 +272,11 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
 		}
-		schema = append(schema, field)
+
+                // if we got no error and the field is nil, skip it
+                if field != nil {
+                  schema = append(schema, field)
+                }
 	}
 	return
 }
