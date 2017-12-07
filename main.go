@@ -30,7 +30,7 @@ import (
 	"path"
 	"strings"
 
-	"./protos"
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
