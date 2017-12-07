@@ -174,12 +174,12 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		descriptor.FieldDescriptorProto_TYPE_SFIXED32,
 		descriptor.FieldDescriptorProto_TYPE_SFIXED64,
 		descriptor.FieldDescriptorProto_TYPE_SINT32,
-		descriptor.FieldDescriptorProto_TYPE_SINT64:
+		descriptor.FieldDescriptorProto_TYPE_SINT64,
+		descriptor.FieldDescriptorProto_TYPE_ENUM:
 		field.Type = "INTEGER"
 
 	case descriptor.FieldDescriptorProto_TYPE_STRING,
-		descriptor.FieldDescriptorProto_TYPE_BYTES,
-		descriptor.FieldDescriptorProto_TYPE_ENUM:
+		descriptor.FieldDescriptorProto_TYPE_BYTES:
 		field.Type = "STRING"
 
 	case descriptor.FieldDescriptorProto_TYPE_BOOL:
