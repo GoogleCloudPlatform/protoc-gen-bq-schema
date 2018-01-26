@@ -9,6 +9,7 @@ It is generated from these files:
 	bq_field.proto
 
 It has these top-level messages:
+	BigQueryFieldOptions
 */
 package protos
 

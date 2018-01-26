@@ -210,48 +210,33 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 
         fieldOptions := desc.GetOptions()
         if fieldOptions != nil {
-          // is there is a 'required' annotation value on this field?
-          if proto.HasExtension(fieldOptions, protos.E_Require) {
-            requireValue, err := proto.GetExtension(fieldOptions, protos.E_Require)
-            if err == nil {
-              doRequire := *requireValue.(*bool)
-              if (doRequire) {
-                // annotations are telling us to force-require this field, so do it
-                field.Mode = "REQUIRED"
-              }
-            }
-          }
+          // try to resolve BQ field options
+          if proto.HasExtension(fieldOptions, protos.E_BigQuery) {
+            _rawOptions, err := proto.GetExtension(fieldOptions, protos.E_BigQuery)
 
-          // is there a type override value on this field?
-          if proto.HasExtension(fieldOptions, protos.E_TypeOverride) {
-            typeValue, err := proto.GetExtension(fieldOptions, protos.E_TypeOverride)
-            if err == nil {
-              typeOverride := *typeValue.(*string)
-              if len(typeOverride) > 0 {
-                field.Type = typeOverride
-              }
-            }
-          }
+            // if there is no error, decode the options
+            if err != nil {
+              bqFieldOptions := *_rawOptions.(*protos.BigQueryFieldOptions)
 
-          // is there an ignore annotation on this field?
-          if proto.HasExtension(fieldOptions, protos.E_Ignore) {
-            ignoreValue, err := proto.GetExtension(fieldOptions, protos.E_Ignore)
-            if err == nil {
-              doIgnore := *ignoreValue.(*bool)
-              if (doIgnore) {
+              // is there an ignore annotation on this field?
+              if bqFieldOptions.Ignore {
                 // return nil for both the field and err, which should skip the field below
                 return nil, nil
               }
-            }
-          }
 
-          // is there a field description?
-          if proto.HasExtension(fieldOptions, protos.E_Description) {
-            descVal, err := proto.GetExtension(fieldOptions, protos.E_Description)
-            if err == nil {
-              fieldDescription := *descVal.(*string)
-              if len(fieldDescription) > 0 {
-                field.Description = fieldDescription
+              // is there is a 'required' annotation value on this field?
+              if bqFieldOptions.Require {
+                field.Mode = "REQUIRED"
+              }
+
+              // is there a type override value on this field?
+              if len(bqFieldOptions.TypeOverride) > 0 {
+                field.Type = bqFieldOptions.TypeOverride
+              }
+
+              // is there a field description?
+              if len(bqFieldOptions.Description) > 0 {
+                field.Description = bqFieldOptions.Description
               }
             }
           }
