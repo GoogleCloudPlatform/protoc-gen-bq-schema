@@ -20,27 +20,26 @@ option go_package = "protos";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.FieldOptions {
-  // Flag to specify that a field should be marked as 'REQUIRED' when
-  // used to generate schema for BigQuery.
+  // Message containing options related to BigQuery schema generation
+  // and management via Protobuf.
   //
   // TODO: register with protobuf-global-extension-registry@google.com
-  bool require = 1022;
+  message BigQuery {
+    // Flag to specify that a field should be marked as 'REQUIRED' when
+    // used to generate schema for BigQuery.
+    bool require = 1;
 
-  // Optionally override whatever type is resolved by the schema
-  // generator. This is useful, for example, to store epoch timestamps
-  // with the underlying 'TIMESTAMP' type, when normally, they would
-  // be structured as 'INTEGER' fields.
-  //
-  // TODO: register with protobuf-global-extension-registry@google.com
-  string type_override = 1023;
+    // Optionally override whatever type is resolved by the schema
+    // generator. This is useful, for example, to store epoch timestamps
+    // with the underlying 'TIMESTAMP' type, when normally, they would
+    // be structured as 'INTEGER' fields.
+    string type_override = 2;
 
-  // Optionally omit a field from BigQuery schema.
-  //
-  // TODO: register with protobuf-global-extension-registry@google.com
-  bool ignore = 1024;
+    // Optionally omit a field from BigQuery schema.
+    bool ignore = 3;
 
-  // Set the description for a field in BigQuery schema.
-  //
-  // TODO: register with protobuf-global-extension-registry@google.com
-  string description = 1025;
+    // Set the description for a field in BigQuery schema.
+    string description = 4;
+  }
 }
+
