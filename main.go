@@ -215,7 +215,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 			_rawOptions, err := proto.GetExtension(fieldOptions, protos.E_Bigquery)
 
 			// if there is no error, decode the options
-			if err != nil {
+			if err == nil {
 				bqFieldOptions := *_rawOptions.(*protos.BigQueryFieldOptions)
 
 				// is there an ignore annotation on this field?
