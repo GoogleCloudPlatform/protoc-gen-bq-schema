@@ -211,8 +211,8 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
         fieldOptions := desc.GetOptions()
         if fieldOptions != nil {
           // try to resolve BQ field options
-          if proto.HasExtension(fieldOptions, protos.E_BigQuery) {
-            _rawOptions, err := proto.GetExtension(fieldOptions, protos.E_BigQuery)
+          if proto.HasExtension(fieldOptions, protos.E_Bigquery) {
+            _rawOptions, err := proto.GetExtension(fieldOptions, protos.E_Bigquery)
 
             // if there is no error, decode the options
             if err != nil {
