@@ -49,11 +49,11 @@ var (
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name   string   `json:"name"`
-	Type   string   `json:"type"`
-	Mode   string   `json:"mode"`
-        Description  string  `json:"description,omitempty"`
-	Fields []*Field `json:"fields,omitempty"`
+	Name        string   `json:"name"`
+	Type        string   `json:"type"`
+	Mode        string   `json:"mode"`
+	Description string   `json:"description,omitempty"`
+	Fields      []*Field `json:"fields,omitempty"`
 }
 
 // ProtoPackage describes a package of Protobuf, which is an container of message types.
@@ -208,39 +208,39 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
 	}
 
-        fieldOptions := desc.GetOptions()
-        if fieldOptions != nil {
-          // try to resolve BQ field options
-          if proto.HasExtension(fieldOptions, protos.E_Bigquery) {
-            _rawOptions, err := proto.GetExtension(fieldOptions, protos.E_Bigquery)
+	fieldOptions := desc.GetOptions()
+	if fieldOptions != nil {
+		// try to resolve BQ field options
+		if proto.HasExtension(fieldOptions, protos.E_Bigquery) {
+			_rawOptions, err := proto.GetExtension(fieldOptions, protos.E_Bigquery)
 
-            // if there is no error, decode the options
-            if err != nil {
-              bqFieldOptions := *_rawOptions.(*protos.BigQueryFieldOptions)
+			// if there is no error, decode the options
+			if err != nil {
+				bqFieldOptions := *_rawOptions.(*protos.BigQueryFieldOptions)
 
-              // is there an ignore annotation on this field?
-              if bqFieldOptions.Ignore {
-                // return nil for both the field and err, which should skip the field below
-                return nil, nil
-              }
+				// is there an ignore annotation on this field?
+				if bqFieldOptions.Ignore {
+					// return nil for both the field and err, which should skip the field below
+					return nil, nil
+				}
 
-              // is there is a 'required' annotation value on this field?
-              if bqFieldOptions.Require {
-                field.Mode = "REQUIRED"
-              }
+				// is there is a 'required' annotation value on this field?
+				if bqFieldOptions.Require {
+					field.Mode = "REQUIRED"
+				}
 
-              // is there a type override value on this field?
-              if len(bqFieldOptions.TypeOverride) > 0 {
-                field.Type = bqFieldOptions.TypeOverride
-              }
+				// is there a type override value on this field?
+				if len(bqFieldOptions.TypeOverride) > 0 {
+					field.Type = bqFieldOptions.TypeOverride
+				}
 
-              // is there a field description?
-              if len(bqFieldOptions.Description) > 0 {
-                field.Description = bqFieldOptions.Description
-              }
-            }
-          }
-        }
+				// is there a field description?
+				if len(bqFieldOptions.Description) > 0 {
+					field.Description = bqFieldOptions.Description
+				}
+			}
+		}
+	}
 
 	if field.Type != "RECORD" {
 		return field, nil
@@ -270,10 +270,10 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (
 			return nil, err
 		}
 
-                // if we got no error and the field is nil, skip it
-                if field != nil {
-                  schema = append(schema, field)
-                }
+		// if we got no error and the field is nil, skip it
+		if field != nil {
+			schema = append(schema, field)
+		}
 	}
 	return
 }
