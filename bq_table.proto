@@ -12,18 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-syntax = "proto2";
+syntax = "proto3";
 package gen_bq_schema;
 
-option go_package = "main";
+option go_package = "protos";
 
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MessageOptions {
-  // Sepcified a name of table in BigQuery for the message.
+  // Specified a name of table in BigQuery for the message.
   // Indicates the message is a type of record to be stored into BigQuery.
   //
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
-  optional string table_name = 1021;
+  string table_name = 1021;
+
+  // Description for a table in BigQuery.
+  //
+  // TODO: register with protobuf-global-extension-registry@google.com
+  string table_description = 1026;
 }

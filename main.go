@@ -30,6 +30,8 @@ import (
 	"path"
 	"strings"
 
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
 	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
@@ -47,10 +49,11 @@ var (
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name   string   `json:"name"`
-	Type   string   `json:"type"`
-	Mode   string   `json:"mode"`
-	Fields []*Field `json:"fields,omitempty"`
+	Name        string   `json:"name"`
+	Type        string   `json:"type"`
+	Mode        string   `json:"mode"`
+	Description string   `json:"description,omitempty"`
+	Fields      []*Field `json:"fields,omitempty"`
 }
 
 // ProtoPackage describes a package of Protobuf, which is an container of message types.
@@ -215,6 +218,31 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
 	}
 
+	opts := desc.GetOptions()
+	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
+		rawOpt, err := proto.GetExtension(opts, protos.E_Bigquery)
+		if err != nil {
+			return nil, err
+		}
+		opt := *rawOpt.(*protos.BigQueryFieldOptions)
+		if opt.Ignore {
+			// skip the field below
+			return nil, nil
+		}
+
+		if opt.Require {
+			field.Mode = "REQUIRED"
+		}
+
+		if len(opt.TypeOverride) > 0 {
+			field.Type = opt.TypeOverride
+		}
+
+		if len(opt.Description) > 0 {
+			field.Description = opt.Description
+		}
+	}
+
 	if field.Type != "RECORD" {
 		return field, nil
 	}
@@ -246,7 +274,11 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
 		}
-		schema = append(schema, field)
+
+		// if we got no error and the field is nil, skip it
+		if field != nil {
+			schema = append(schema, field)
+		}
 	}
 	return
 }
@@ -264,10 +296,10 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		if options == nil {
 			continue
 		}
-		if !proto.HasExtension(options, E_TableName) {
+		if !proto.HasExtension(options, protos.E_TableName) {
 			continue
 		}
-		optionValue, err := proto.GetExtension(options, E_TableName)
+		optionValue, err := proto.GetExtension(options, protos.E_TableName)
 		if err != nil {
 			return nil, err
 		}

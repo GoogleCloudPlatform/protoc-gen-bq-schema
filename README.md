@@ -19,15 +19,17 @@ after their package names and `bq_table_name` options.
 If you do not already have the standard google protobuf libraries in your `proto_path`, you'll need to specify them directly on the command line (and potentially need to copy `bq_schema.proto` into a proto_path directory as well), like this:
 
 ```sh
-protc --bq-schema_out=path/to/out/dir foo.proto --proto_path=. --proto_path=<path_to_google_proto_folder>/src
+protoc --bq-schema_out=path/to/out/dir foo.proto --proto_path=. --proto_path=<path_to_google_proto_folder>/src
 ```
 
 ### Example
 Suppose that we have the following foo.proto.
 
 ```protobuf
+syntax = "proto2";
 package foo;
-import "bq_table_name.proto";
+import "bq_table.proto";
+import "bq_field.proto";
 
 message Bar {
   option (gen_bq_schema.table_name) = "bar_table";
@@ -39,6 +41,14 @@ message Bar {
   required int32 a = 1;
   optional Nested b = 2;
   repeated string c = 3;
+
+  optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
+  optional uint64 e = 5 [
+    (gen_bq_schema.bigquery) = {
+      require: true
+      type_override: 'TIMESTAMP'
+    }
+  ];
 }
 
 message Baz {
