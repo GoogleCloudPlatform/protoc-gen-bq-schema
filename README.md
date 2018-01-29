@@ -26,8 +26,10 @@ protoc --bq-schema_out=path/to/out/dir foo.proto --proto_path=. --proto_path=<pa
 Suppose that we have the following foo.proto.
 
 ```protobuf
+syntax = "proto2";
 package foo;
-import "bq_table_name.proto";
+import "bq_table.proto";
+import "bq_field.proto";
 
 message Bar {
   option (gen_bq_schema.table_name) = "bar_table";
@@ -39,6 +41,14 @@ message Bar {
   required int32 a = 1;
   optional Nested b = 2;
   repeated string c = 3;
+
+  optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
+  optional uint64 e = 5 [
+    (gen_bq_schema.bigquery) = {
+      require: true
+      type_override: 'TIMESTAMP'
+    }
+  ];
 }
 
 message Baz {

@@ -18,6 +18,7 @@ PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog
 PROTO_PKG=github.com/golang/protobuf/proto
 PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
+EXAMPLES_PROTO=examples/foo.proto
 
 install: $(BQ_PLUGIN)
 
@@ -46,5 +47,8 @@ distclean clean:
 
 realclean: distclean
 	rm -f bq_table.pb.go bq_field.pb.go
+
+examples: $(BQ_PLUGIN)
+	protoc -I. -Ivendor/protobuf --plugin=$(BQ_PLUGIN) --bq-schema_out=examples $(EXAMPLES_PROTO)
 
 .PHONY: goprotobuf glog
