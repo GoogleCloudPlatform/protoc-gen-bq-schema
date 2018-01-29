@@ -208,37 +208,28 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
 	}
 
-	fieldOptions := desc.GetOptions()
-	if fieldOptions != nil {
-		// try to resolve BQ field options
-		if proto.HasExtension(fieldOptions, protos.E_Bigquery) {
-			_rawOptions, err := proto.GetExtension(fieldOptions, protos.E_Bigquery)
+	opts := desc.GetOptions()
+	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
+		rawOpt, err := proto.GetExtension(opts, protos.E_Bigquery)
+		if err != nil {
+			return nil, err
+		}
+		opt := *rawOpt.(*protos.BigQueryFieldOptions)
+		if opt.Ignore {
+			// skip the field below
+			return nil, nil
+		}
 
-			// if there is no error, decode the options
-			if err == nil {
-				bqFieldOptions := *_rawOptions.(*protos.BigQueryFieldOptions)
+		if opt.Require {
+			field.Mode = "REQUIRED"
+		}
 
-				// is there an ignore annotation on this field?
-				if bqFieldOptions.Ignore {
-					// return nil for both the field and err, which should skip the field below
-					return nil, nil
-				}
+		if len(opt.TypeOverride) > 0 {
+			field.Type = opt.TypeOverride
+		}
 
-				// is there is a 'required' annotation value on this field?
-				if bqFieldOptions.Require {
-					field.Mode = "REQUIRED"
-				}
-
-				// is there a type override value on this field?
-				if len(bqFieldOptions.TypeOverride) > 0 {
-					field.Type = bqFieldOptions.TypeOverride
-				}
-
-				// is there a field description?
-				if len(bqFieldOptions.Description) > 0 {
-					field.Description = bqFieldOptions.Description
-				}
-			}
+		if len(opt.Description) > 0 {
+			field.Description = opt.Description
 		}
 	}
 

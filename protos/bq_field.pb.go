@@ -15,8 +15,6 @@ var _ = math.Inf
 
 // Message containing options related to BigQuery schema generation
 // and management via Protobuf.
-//
-// TODO: register with protobuf-global-extension-registry@google.com
 type BigQueryFieldOptions struct {
 	// Flag to specify that a field should be marked as 'REQUIRED' when
 	// used to generate schema for BigQuery.
