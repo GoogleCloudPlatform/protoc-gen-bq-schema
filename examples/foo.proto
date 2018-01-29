@@ -3,6 +3,9 @@ package foo;
 import "bq_table.proto";
 import "bq_field.proto";
 
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
 message Bar {
   option (gen_bq_schema.table_name) = "bar_table";
 
@@ -21,6 +24,9 @@ message Bar {
       type_override: 'TIMESTAMP'
     }
   ];
+
+  optional google.protobuf.Int32Value wkt1 = 11;
+  optional google.protobuf.Timestamp wkt2 = 12;
 }
 
 message Baz {
