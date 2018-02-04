@@ -219,6 +219,10 @@ func TestTypes(t *testing.T) {
 						name: "msg4" number: 22 type: TYPE_MESSAGE label: LABEL_OPTIONAL
 						type_name: "nested2.BarProto"
 					>
+					field <
+						name: "msg2" number: 23 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: "FooProto.EmptyNested1"
+					>
 					nested_type <
 						name: "Group1"
 						field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
@@ -226,6 +230,9 @@ func TestTypes(t *testing.T) {
 					nested_type <
 						name: "Nested1"
 						field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					>
+					nested_type <
+						name: "EmptyNested1"
 					>
 					enum_type < name: "Enum1" value < name: "E1" number: 1 > value < name: "E2" number: 2 > >
 					options < [gen_bq_schema.table_name]: "foo_table" >
