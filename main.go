@@ -261,6 +261,10 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, err
 	}
 
+	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
+	    return nil, nil
+	}
+
 	return field, nil
 }
 
