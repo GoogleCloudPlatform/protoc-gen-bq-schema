@@ -403,3 +403,28 @@ func TestModes(t *testing.T) {
 			]`,
 		})
 }
+
+// TestFormatted tests the generator with a table configured for formatted JSON output.
+func TestFormatted(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "formatted.proto"
+			proto_file <
+				name: "formatted.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FormattedProto"
+					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "i2" number: 2 type: TYPE_INT32 label: LABEL_REQUIRED >
+					field < name: "i3" number: 3 type: TYPE_INT32 label: LABEL_REPEATED >
+					options < [gen_bq_schema.format_json]: true, [gen_bq_schema.table_name]: "formatted_table" >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/formatted_table.schema": `[
+				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "i2", "type": "INTEGER", "mode": "REQUIRED" },
+				{ "name": "i3", "type": "INTEGER", "mode": "REPEATED" }
+			]`,
+		})
+}

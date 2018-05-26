@@ -262,7 +262,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	}
 
 	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-	    return nil, nil
+		return nil, nil
 	}
 
 	return field, nil
@@ -319,7 +319,16 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 			return nil, err
 		}
 
-		jsonSchema, err := json.Marshal(schema)
+		var jsonSchema []byte
+		var formatJSON bool
+		if formatJSONOptionValue, err := proto.GetExtension(options, protos.E_FormatJson); err == nil {
+			formatJSON = *formatJSONOptionValue.(*bool)
+		}
+		if formatJSON {
+			jsonSchema, err = json.MarshalIndent(schema, "", "  ")
+		} else {
+			jsonSchema, err = json.Marshal(schema)
+		}
 		if err != nil {
 			glog.Error("Failed to encode schema", err)
 			return nil, err

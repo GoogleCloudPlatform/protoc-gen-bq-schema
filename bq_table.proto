@@ -31,4 +31,7 @@ extend google.protobuf.MessageOptions {
   //
   // TODO: register with protobuf-global-extension-registry@google.com
   string table_description = 1026;
+
+  // Control over how to format the JSON output for the generated BigQuery schema.
+  bool format_json = 1027;
 }
