@@ -202,9 +202,12 @@ var (
 	}
 )
 
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msg *descriptor.DescriptorProto) (*Field, error) {
+func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, useJsonNames bool) (*Field, error) {
 	field := &Field{
 		Name: desc.GetName(),
+	}
+	if useJsonNames && desc.GetJsonName() != "" {
+		field.Name = desc.GetJsonName()
 	}
 
 	var ok bool
@@ -236,6 +239,10 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 
 		if len(opt.TypeOverride) > 0 {
 			field.Type = opt.TypeOverride
+		}
+
+		if len(opt.Name) > 0 {
+			field.Name = opt.Name
 		}
 
 		if len(opt.Description) > 0 {
@@ -272,8 +279,19 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
+
+	useJsonNames := false
+	if opts := msg.GetOptions(); opts != nil && proto.HasExtension(opts, protos.E_BigqueryOpts) {
+		if ext, err := proto.GetExtension(opts, protos.E_BigqueryOpts); err != nil {
+			return nil, err
+		} else {
+			bqOpts := ext.(*protos.BigQueryMessageOptions)
+			useJsonNames = bqOpts != nil && bqOpts.UseJsonNames
+		}
+	}
+
 	for _, fieldDesc := range msg.GetField() {
-		field, err := convertField(curPkg, fieldDesc, msg)
+		field, err := convertField(curPkg, fieldDesc, useJsonNames)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -319,7 +337,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 			return nil, err
 		}
 
-		jsonSchema, err := json.Marshal(schema)
+		jsonSchema, err := json.MarshalIndent(schema, "", " ")
 		if err != nil {
 			glog.Error("Failed to encode schema", err)
 			return nil, err

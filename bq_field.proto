@@ -38,6 +38,9 @@ message BigQueryFieldOptions {
 
   // Set the description for a field in BigQuery schema.
   string description = 4;
+
+  // Customize the name of the field in the BigQuery schema.
+  string name = 5;
 }
 
 

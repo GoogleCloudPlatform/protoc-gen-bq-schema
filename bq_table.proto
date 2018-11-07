@@ -29,6 +29,23 @@ extend google.protobuf.MessageOptions {
 
   // Description for a table in BigQuery.
   //
+  // Deprecated: See bigquery_opts.table_description.
+  string table_description = 1026 [deprecated = true];
+
+  // BigQuery message schema generation options.
+  //
   // TODO: register with protobuf-global-extension-registry@google.com
-  string table_description = 1026;
+  BigQueryMessageOptions bigquery_opts = 1027;
+}
+
+message BigQueryMessageOptions {
+  // Description for a table in BigQuery.
+  //
+  // Note: this is not currently used as the generated schema does not
+  // currently include any table descriptions.
+  string table_description = 1;
+
+  // If true, BigQuery field names will default to a field's JSON name,
+  // not its original/proto field name.
+  bool use_json_names = 2;
 }
