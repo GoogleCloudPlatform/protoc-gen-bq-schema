@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/proto"
-
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
@@ -36,11 +36,17 @@ func joinNames(targets map[string]*schema) (result string) {
 	return
 }
 
-func testConvert(t *testing.T, input string, expectedOutputs map[string]string) {
+func testConvert(t *testing.T, input string, expectedOutputs map[string]string, extras ...func(request *plugin.CodeGeneratorRequest)) {
 	req := plugin.CodeGeneratorRequest{}
 	if err := proto.UnmarshalText(input, &req); err != nil {
 		t.Fatal("Failed to parse test input: ", err)
 	}
+
+	// apply custom transformations, if any
+	for _, extra := range extras {
+		extra(&req)
+	}
+
 	expectedSchema := make(map[string]*schema)
 	for filename, data := range expectedOutputs {
 		parsed := new(schema)
@@ -93,7 +99,7 @@ func TestSimple(t *testing.T) {
 				message_type <
 					name: "FooProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.table_name]: "foo_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,
@@ -118,7 +124,7 @@ func TestIgnoreNonTargetMessage(t *testing.T) {
 				message_type <
 					name: "BarProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.table_name]: "bar_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "bar_table"> >
 				>
 				message_type <
 					name: "BazProto"
@@ -143,7 +149,7 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 				message_type <
 					name: "FooProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.table_name]: "foo_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
 				>
 			>
 			proto_file <
@@ -152,7 +158,7 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 				message_type <
 					name: "BarProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.table_name]: "bar_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "bar_table"> >
 				>
 			>
 		`,
@@ -235,7 +241,7 @@ func TestTypes(t *testing.T) {
 						name: "EmptyNested1"
 					>
 					enum_type < name: "Enum1" value < name: "E1" number: 1 > value < name: "E2" number: 2 > >
-					options < [gen_bq_schema.table_name]: "foo_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
 				>
 			>
 			proto_file <
@@ -358,7 +364,7 @@ func TestWellKnownTypes(t *testing.T) {
 						name: "t" number: 11 type: TYPE_MESSAGE label: LABEL_OPTIONAL
 						type_name: ".google.protobuf.Timestamp"
 					>
-					options < [gen_bq_schema.table_name]: "foo_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,
@@ -391,7 +397,7 @@ func TestModes(t *testing.T) {
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					field < name: "i2" number: 2 type: TYPE_INT32 label: LABEL_REQUIRED >
 					field < name: "i3" number: 3 type: TYPE_INT32 label: LABEL_REPEATED >
-					options < [gen_bq_schema.table_name]: "foo_table" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,
@@ -401,5 +407,37 @@ func TestModes(t *testing.T) {
 				{ "name": "i2", "type": "INTEGER", "mode": "REQUIRED" },
 				{ "name": "i3", "type": "INTEGER", "mode": "REPEATED" }
 			]`,
+		})
+}
+
+// TestFallbackToOldOptionDefinition tests the generator when a request has
+// a message option using the old option, a simple string for the table name,
+// instead of the new option (a message with multiple values therein).
+func TestFallbackToOldOptionDefinition(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FooProto"
+					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/foo_table.schema": `[
+				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+		}, func(req *plugin.CodeGeneratorRequest) {
+			// set the extension value using *old* definition
+			msg := req.ProtoFile[0].MessageType[0]
+			if msg.Options == nil {
+				msg.Options = &descriptor.MessageOptions{}
+			}
+			err := proto.SetExtension(msg.Options, e_TableName, proto.String("foo_table"))
+			if err != nil {
+				t.Logf("failed to set extension: %v", err)
+			}
 		})
 }

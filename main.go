@@ -202,11 +202,11 @@ var (
 	}
 )
 
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, useJsonNames bool) (*Field, error) {
+func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions) (*Field, error) {
 	field := &Field{
 		Name: desc.GetName(),
 	}
-	if useJsonNames && desc.GetJsonName() != "" {
+	if msgOpts.GetUseJsonNames() && desc.GetJsonName() != "" {
 		field.Name = desc.GetJsonName()
 	}
 
@@ -262,8 +262,11 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, u
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", desc.GetTypeName())
 	}
-	var err error
-	field.Fields, err = convertMessageType(curPkg, recordType)
+	fieldMsgOpts, err := getBigqueryMessageOptions(recordType)
+	if err != nil {
+		return nil, err
+	}
+	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -275,23 +278,13 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, u
 	return field, nil
 }
 
-func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (schema []*Field, err error) {
+func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions) (schema []*Field, err error) {
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
 
-	useJsonNames := false
-	if opts := msg.GetOptions(); opts != nil && proto.HasExtension(opts, protos.E_BigqueryOpts) {
-		if ext, err := proto.GetExtension(opts, protos.E_BigqueryOpts); err != nil {
-			return nil, err
-		} else {
-			bqOpts := ext.(*protos.BigQueryMessageOptions)
-			useJsonNames = bqOpts != nil && bqOpts.UseJsonNames
-		}
-	}
-
 	for _, fieldDesc := range msg.GetField() {
-		field, err := convertField(curPkg, fieldDesc, useJsonNames)
+		field, err := convertField(curPkg, fieldDesc, opts)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -305,6 +298,19 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto) (
 	return
 }
 
+// NB: This is what the extension for tag 1021 used to look like. For some
+// level of backwards compatibility, we will try to parse the extension using
+// this definition if we get an error trying to parse it as the current
+// definition (a message, to support multiple extension fields therein).
+var e_TableName = &proto.ExtensionDesc{
+	ExtendedType:  (*descriptor.MessageOptions)(nil),
+	ExtensionType: (*string)(nil),
+	Field:         1021,
+	Name:          "gen_bq_schema.table_name",
+	Tag:           "bytes,1021,opt,name=table_name,json=tableName",
+	Filename:      "bq_table.proto",
+}
+
 func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
@@ -314,24 +320,20 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 
 	response := []*plugin.CodeGeneratorResponse_File{}
 	for _, msg := range file.GetMessageType() {
-		options := msg.GetOptions()
-		if options == nil {
-			continue
-		}
-		if !proto.HasExtension(options, protos.E_TableName) {
-			continue
-		}
-		optionValue, err := proto.GetExtension(options, protos.E_TableName)
+		opts, err := getBigqueryMessageOptions(msg)
 		if err != nil {
 			return nil, err
+		} else if opts == nil {
+			continue
 		}
-		tableName := *optionValue.(*string)
+
+		tableName := opts.GetTableName()
 		if len(tableName) == 0 {
 			return nil, fmt.Errorf("table name of %s cannot be empty", msg.GetName())
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
-		schema, err := convertMessageType(pkg, msg)
+		schema, err := convertMessageType(pkg, msg, opts)
 		if err != nil {
 			glog.Errorf("Failed to convert %s: %v", name, err)
 			return nil, err
@@ -351,6 +353,37 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	}
 
 	return response, nil
+}
+
+// getBigqueryMessageOptions returns the bigquery options for the given message.
+// If an error is encountered, it is returned instead. If no error occurs, but
+// the message has no gen_bq_schema.bigquery_opts option, this function returns
+// nil, nil.
+func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQueryMessageOptions, error) {
+	options := msg.GetOptions()
+	if options == nil {
+		return nil, nil
+	}
+
+	if !proto.HasExtension(options, protos.E_BigqueryOpts) {
+		return nil, nil
+	}
+
+	optionValue, err := proto.GetExtension(options, protos.E_BigqueryOpts)
+	if err == nil {
+		return optionValue.(*protos.BigQueryMessageOptions), nil
+	}
+
+	// try to decode the extension using old definition before failing
+	optionValue, newErr := proto.GetExtension(options, e_TableName)
+	if newErr != nil {
+		return nil, err // return original error
+	}
+	// translate this old definition to the expected message type
+	name := *optionValue.(*string)
+	return &protos.BigQueryMessageOptions{
+		TableName: name,
+	}, nil
 }
 
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {

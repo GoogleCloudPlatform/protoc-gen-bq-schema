@@ -20,30 +20,31 @@ option go_package = "protos";
 import "google/protobuf/descriptor.proto";
 
 extend google.protobuf.MessageOptions {
-  // Specified a name of table in BigQuery for the message.
+  // NB: There used to be a custom option named "table_name". But only one tag
+  // is registered for this project: 1021. So when adding other options, the
+  // only solution was to change tag 1021 to be a message, with all the various
+  // options as fields therein.
+  //
+  // If you are upgrading this library and find that protoc begins to reject
+  // your proto files, you'll need to change all lines that look like so:
+  //    option (gen_bq_schema.table_name) = "foo";
+  // to instead look like this:
+  //    option (gen_bq_schema.bigquery_opts).table_name = "foo";
+  // There was no backwards compatible way to make this change. Sorry for
+  // the inconvenience.
+
+
+  // BigQuery message schema generation options.
   // Indicates the message is a type of record to be stored into BigQuery.
   //
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
-  string table_name = 1021;
-
-  // Description for a table in BigQuery.
-  //
-  // Deprecated: See bigquery_opts.table_description.
-  string table_description = 1026 [deprecated = true];
-
-  // BigQuery message schema generation options.
-  //
-  // TODO: register with protobuf-global-extension-registry@google.com
-  BigQueryMessageOptions bigquery_opts = 1027;
+  BigQueryMessageOptions bigquery_opts = 1021;
 }
 
 message BigQueryMessageOptions {
-  // Description for a table in BigQuery.
-  //
-  // Note: this is not currently used as the generated schema does not
-  // currently include any table descriptions.
-  string table_description = 1;
+  // Specifies a name of table in BigQuery for the message.
+  string table_name = 1;
 
   // If true, BigQuery field names will default to a field's JSON name,
   // not its original/proto field name.
