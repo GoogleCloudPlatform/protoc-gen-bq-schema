@@ -3,10 +3,12 @@
 
 package protos
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-import descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+import (
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
+	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	math "math"
+)
 
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
@@ -17,7 +19,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type BigQueryMessageOptions struct {
 	// Specifies a name of table in BigQuery for the message.
@@ -34,16 +36,17 @@ func (m *BigQueryMessageOptions) Reset()         { *m = BigQueryMessageOptions{}
 func (m *BigQueryMessageOptions) String() string { return proto.CompactTextString(m) }
 func (*BigQueryMessageOptions) ProtoMessage()    {}
 func (*BigQueryMessageOptions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bq_table_b947be292cbdac0c, []int{0}
+	return fileDescriptor_54f9c1df63ca9ac7, []int{0}
 }
+
 func (m *BigQueryMessageOptions) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_BigQueryMessageOptions.Unmarshal(m, b)
 }
 func (m *BigQueryMessageOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_BigQueryMessageOptions.Marshal(b, m, deterministic)
 }
-func (dst *BigQueryMessageOptions) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_BigQueryMessageOptions.Merge(dst, src)
+func (m *BigQueryMessageOptions) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_BigQueryMessageOptions.Merge(m, src)
 }
 func (m *BigQueryMessageOptions) XXX_Size() int {
 	return xxx_messageInfo_BigQueryMessageOptions.Size(m)
@@ -73,7 +76,7 @@ var E_BigqueryOpts = &proto.ExtensionDesc{
 	ExtensionType: (*BigQueryMessageOptions)(nil),
 	Field:         1021,
 	Name:          "gen_bq_schema.bigquery_opts",
-	Tag:           "bytes,1021,opt,name=bigquery_opts,json=bigqueryOpts",
+	Tag:           "bytes,1021,opt,name=bigquery_opts",
 	Filename:      "bq_table.proto",
 }
 
@@ -82,9 +85,9 @@ func init() {
 	proto.RegisterExtension(E_BigqueryOpts)
 }
 
-func init() { proto.RegisterFile("bq_table.proto", fileDescriptor_bq_table_b947be292cbdac0c) }
+func init() { proto.RegisterFile("bq_table.proto", fileDescriptor_54f9c1df63ca9ac7) }
 
-var fileDescriptor_bq_table_b947be292cbdac0c = []byte{
+var fileDescriptor_54f9c1df63ca9ac7 = []byte{
 	// 223 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x8f, 0xb1, 0x4b, 0x43, 0x31,
 	0x10, 0x87, 0x89, 0x83, 0xb6, 0xb1, 0xed, 0x90, 0x41, 0x1e, 0x82, 0x18, 0x44, 0xe1, 0x4d, 0x29,
