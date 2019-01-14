@@ -16,17 +16,19 @@ BQ_PLUGIN=bin/protoc-gen-bq-schema
 GO_PLUGIN=bin/protoc-gen-go
 PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog
+PROTO_SRC=bq_table.proto bq_field.proto
+PROTO_GENFILES=protos/bq_table.pb.go protos/bq_field.pb.go
 PROTO_PKG=github.com/golang/protobuf/proto
 PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
 EXAMPLES_PROTO=examples/foo.proto
 
 install: $(BQ_PLUGIN)
 
-$(BQ_PLUGIN): bq_table.pb.go bq_field.pb.go goprotobuf glog
+$(BQ_PLUGIN): $(PROTO_GENFILES) goprotobuf glog
 	go build -o $@
 
-bq_table.pb.go bq_field.pb.go: bq_table.proto bq_field.proto $(GO_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=bin/protoc-gen-go --go_out=$(PKGMAP):protos bq_table.proto bq_field.proto
+$(PROTO_GENFILES): $(PROTO_SRC) $(GO_PLUGIN)
+	protoc -I. -Ivendor/protobuf --plugin=$(GO_PLUGIN) --go_out=$(PKGMAP):protos $(PROTO_SRC)
 
 goprotobuf:
 	go get $(PROTO_PKG)
@@ -46,7 +48,7 @@ distclean clean:
 	rm -f $(GO_PLUGIN) $(BQ_PLUGIN)
 
 realclean: distclean
-	rm -f bq_table.pb.go bq_field.pb.go
+	rm -f $(PROTO_GENFILES)
 
 examples: $(BQ_PLUGIN)
 	protoc -I. -Ivendor/protobuf --plugin=$(BQ_PLUGIN) --bq-schema_out=examples $(EXAMPLES_PROTO)
