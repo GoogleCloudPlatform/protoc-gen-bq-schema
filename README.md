@@ -32,7 +32,7 @@ import "bq_table.proto";
 import "bq_field.proto";
 
 message Bar {
-  option (gen_bq_schema.table_name) = "bar_table";
+  option (gen_bq_schema.bigquery_opts).table_name = "bar_table";
 
   message Nested {
     repeated int32 a = 1;
@@ -57,7 +57,7 @@ message Baz {
 ```
 
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
-The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.table_name`.
+The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
 ## License
 
