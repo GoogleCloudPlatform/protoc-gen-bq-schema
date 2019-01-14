@@ -43,7 +43,11 @@ func TestIgnore(t *testing.T) {
 						>
 					>
 				>
-				options < [gen_bq_schema.table_name]: "foo_table" >
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
 			>
 		>
 	`, map[string]string{
@@ -72,7 +76,11 @@ func TestRequire(t *testing.T) {
 						>
 					>
 				>
-				options < [gen_bq_schema.table_name]: "foo_table" >
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
 			>
 		>
 	`, map[string]string{
@@ -101,7 +109,11 @@ func TestTypeOverride(t *testing.T) {
 						>
 					>
 				>
-				options < [gen_bq_schema.table_name]: "foo_table" >
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
 			>
 		>
 	`, map[string]string{
@@ -130,7 +142,11 @@ func TestDescription(t *testing.T) {
 						>
 					>
 				>
-				options < [gen_bq_schema.table_name]: "foo_table" >
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
 			>
 		>
 	`, map[string]string{
@@ -159,7 +175,11 @@ func TestNameOverride(t *testing.T) {
 						>
 					>
 				>
-				options < [gen_bq_schema.table_name]: "foo_table" >
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
 			>
 		>
 	`, map[string]string{
@@ -191,8 +211,8 @@ func TestJsonNames(t *testing.T) {
 					label: LABEL_OPTIONAL
 				>
 				options <
-					[gen_bq_schema.table_name]: "foo_table"
 					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
 						use_json_names: true
 					>
 				>
