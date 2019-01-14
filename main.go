@@ -272,7 +272,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	}
 
 	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-	    return nil, nil
+		return nil, nil
 	}
 
 	return field, nil
@@ -323,7 +323,8 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		opts, err := getBigqueryMessageOptions(msg)
 		if err != nil {
 			return nil, err
-		} else if opts == nil {
+		}
+		if opts == nil {
 			continue
 		}
 
