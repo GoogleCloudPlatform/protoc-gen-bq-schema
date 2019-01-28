@@ -23,6 +23,8 @@ const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 type BigQueryMessageOptions struct {
 	// Specifies a name of table in BigQuery for the message.
+	//
+	// If not blank, indicates the message is a type of record to be stored into BigQuery.
 	TableName string `protobuf:"bytes,1,opt,name=table_name,json=tableName,proto3" json:"table_name,omitempty"`
 	// If true, BigQuery field names will default to a field's JSON name,
 	// not its original/proto field name.

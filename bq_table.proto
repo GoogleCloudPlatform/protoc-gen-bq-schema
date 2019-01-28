@@ -35,7 +35,6 @@ extend google.protobuf.MessageOptions {
 
 
   // BigQuery message schema generation options.
-  // Indicates the message is a type of record to be stored into BigQuery.
   //
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
@@ -44,6 +43,8 @@ extend google.protobuf.MessageOptions {
 
 message BigQueryMessageOptions {
   // Specifies a name of table in BigQuery for the message.
+  //
+  // If not blank, indicates the message is a type of record to be stored into BigQuery.
   string table_name = 1;
 
   // If true, BigQuery field names will default to a field's JSON name,

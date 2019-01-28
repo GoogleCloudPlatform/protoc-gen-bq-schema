@@ -349,7 +349,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 
 		tableName := opts.GetTableName()
 		if len(tableName) == 0 {
-			return nil, fmt.Errorf("table name of %s cannot be empty: %v", msg.GetName(), opts)
+			continue
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
@@ -480,6 +480,5 @@ func main() {
 		glog.Info("Succeeded to process code generator request")
 	} else {
 		glog.Info("Failed to process code generator but successfully sent the error to protoc")
-		os.Exit(1)
 	}
 }
