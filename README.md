@@ -56,6 +56,22 @@ message Baz {
 }
 ```
 
+Example of overwriting type of a field:
+e.g. if using the google date type, protoc-gen-bq-schema will translate it to a record, with int year, month, day, which matches the underlying protobuf: to override and use actual bigquery DATE type instead, you can do as follows.
+
+```
+protobuf
+syntax = "proto2";
+package foo;
+import "bq_table.proto";
+import "bq_field.proto";
+import "google/type/date.proto";
+
+message Bar {
+  option (gen_bq_schema.bigquery_opts).table_name = "bar_table";
+  google.type.Date bar_date = 5 [(gen_bq_schema.bigquery).type_override = "DATE"];
+```
+
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
