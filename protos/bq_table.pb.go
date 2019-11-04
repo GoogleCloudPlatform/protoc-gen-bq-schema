@@ -29,7 +29,7 @@ type BigQueryMessageOptions struct {
 	// If true, BigQuery field names will default to a field's JSON name,
 	// not its original/proto field name.
 	UseJsonNames bool `protobuf:"varint,2,opt,name=use_json_names,json=useJsonNames,proto3" json:"use_json_names,omitempty"`
-	// If set adds defined extra fields to a JSON representation of the message.
+	// If set, adds defined extra fields to a JSON representation of the message.
 	// Value format: "<field name>:<BigQuery field type>" for basic types
 	// or "<field name>:RECORD:<protobuf type>" for message types.
 	// "NULLABLE" by default, different mode may be set via optional suffix ":<mode>"

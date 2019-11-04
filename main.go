@@ -272,10 +272,10 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	return field, nil
 }
 
-func converExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Field, error) {
+func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Field, error) {
 	parts := strings.Split(extraFieldDefinition, ":")
 	if len(parts) < 2 {
-		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition divided by colon, got %d", len(parts))
+		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition separated by colon, got %d", len(parts))
 	}
 
 	field := &Field{
@@ -354,7 +354,7 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, o
 	}
 
 	for _, extraField := range opts.GetExtraFields() {
-		field, err := converExtraField(curPkg, extraField)
+		field, err := convertExtraField(curPkg, extraField)
 		if err != nil {
 			glog.Errorf("Failed to convert extra field %s in %s: %v", extraField, msg.GetName(), err)
 			return nil, err
