@@ -258,24 +258,81 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return field, nil
 	}
 
-	recordType, ok := curPkg.lookupType(desc.GetTypeName())
-	if !ok {
-		return nil, fmt.Errorf("no such message type named %s", desc.GetTypeName())
+	fields, err := convertFieldsForType(curPkg, desc.GetTypeName())
+	if err != nil {
+		return nil, err
 	}
+
+	if len(fields) == 0 { // discard RECORDs that would have zero fields
+		return nil, nil
+	}
+
+	field.Fields = fields
+
+	return field, nil
+}
+
+func converExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Field, error) {
+	parts := strings.Split(extraFieldDefinition, ":")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition divided by colon, got %d", len(parts))
+	}
+
+	field := &Field{
+		Name: parts[0],
+		Type: parts[1],
+		Mode: "NULLABLE",
+	}
+
+	modeIndex := 2
+	if field.Type == "RECORD" {
+		modeIndex = 3
+	}
+	if len(parts) > modeIndex {
+		field.Mode = parts[modeIndex]
+	}
+
+	if field.Type != "RECORD" {
+		return field, nil
+	}
+
+	if len(parts) < 3 {
+		return nil, fmt.Errorf("extra field %s has no type defined", field.Type)
+	}
+
+	typeName := parts[2]
+
+	if t, ok := typeFromWKT[typeName]; ok {
+		field.Type = t
+		return field, nil
+	}
+
+	fields, err := convertFieldsForType(curPkg, typeName)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fields) == 0 { // discard RECORDs that would have zero fields
+		return nil, nil
+	}
+
+	field.Fields = fields
+
+	return field, nil
+}
+
+func convertFieldsForType(curPkg *ProtoPackage, typeName string) ([]*Field, error) {
+	recordType, ok := curPkg.lookupType(typeName)
+	if !ok {
+		return nil, fmt.Errorf("no such message type named %s", typeName)
+	}
+
 	fieldMsgOpts, err := getBigqueryMessageOptions(recordType)
 	if err != nil {
 		return nil, err
 	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts)
-	if err != nil {
-		return nil, err
-	}
 
-	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-		return nil, nil
-	}
-
-	return field, nil
+	return convertMessageType(curPkg, recordType, fieldMsgOpts)
 }
 
 func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions) (schema []*Field, err error) {
@@ -295,6 +352,17 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, o
 			schema = append(schema, field)
 		}
 	}
+
+	for _, extraField := range opts.GetExtraFields() {
+		field, err := converExtraField(curPkg, extraField)
+		if err != nil {
+			glog.Errorf("Failed to convert extra field %s in %s: %v", extraField, msg.GetName(), err)
+			return nil, err
+		}
+
+		schema = append(schema, field)
+	}
+
 	return
 }
 
