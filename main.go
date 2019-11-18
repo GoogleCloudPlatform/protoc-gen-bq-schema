@@ -30,7 +30,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+	"github.com/utilitywarehouse/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
@@ -315,10 +315,12 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
-		return nil, fmt.Errorf("no such package found: %s", file.GetPackage())
+		pkg = &ProtoPackage{
+			name:     name,
+		}
 	}
 
-	response := []*plugin.CodeGeneratorResponse_File{}
+	var response []*plugin.CodeGeneratorResponse_File
 	for _, msg := range file.GetMessageType() {
 		opts, err := getBigqueryMessageOptions(msg)
 		if err != nil {
