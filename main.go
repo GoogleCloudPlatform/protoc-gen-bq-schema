@@ -38,14 +38,12 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
-var (
-	globalPkg = &ProtoPackage{
-		name:     "",
-		parent:   nil,
-		children: make(map[string]*ProtoPackage),
-		types:    make(map[string]*descriptor.DescriptorProto),
-	}
-)
+var globalPkg = &ProtoPackage{
+	name:     "",
+	parent:   nil,
+	children: make(map[string]*ProtoPackage),
+	types:    make(map[string]*descriptor.DescriptorProto),
+}
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
@@ -316,7 +314,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
 		pkg = &ProtoPackage{
-			name:     name,
+			name: name,
 		}
 	}
 
@@ -349,7 +347,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		}
 
 		resFile := &plugin.CodeGeneratorResponse_File{
-			Name:    proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName)),
+			Name:    proto.String(fmt.Sprintf("%s.schema", tableName)),
 			Content: proto.String(string(jsonSchema)),
 		}
 		response = append(response, resFile)
