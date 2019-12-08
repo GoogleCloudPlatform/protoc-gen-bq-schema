@@ -59,6 +59,8 @@ message Baz {
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
+Plugin parameter `enumsasints=true` will marshal all enums into integers instead of strings: `protoc --bq-schema_out=enumsasints=true:. foo.proto`.
+
 ## License
 
 protoc-gen-bq-schema is licensed under the Apache License version 2.0.

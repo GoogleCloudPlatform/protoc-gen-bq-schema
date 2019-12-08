@@ -428,8 +428,30 @@ func convertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 		return nil, err
 	}
 
+	commandLineParameters(req.GetParameter())
+
 	glog.V(1).Info("Converting input")
 	return convert(req)
+}
+
+func commandLineParameters(parameter string) {
+	param := make(map[string]string)
+	for _, p := range strings.Split(parameter, ",") {
+		if i := strings.Index(p, "="); i < 0 {
+			param[p] = ""
+		} else {
+			param[p[0:i]] = p[i+1:]
+		}
+	}
+
+	 for k, v := range param {
+		switch k {
+		case "enumsasints":
+			if v == "true" {
+				typeFromFieldType[descriptor.FieldDescriptorProto_TYPE_ENUM] = "INTEGER"
+			}
+		}
+	}
 }
 
 func main() {
