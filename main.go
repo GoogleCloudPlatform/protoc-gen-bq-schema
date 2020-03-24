@@ -1,27 +1,8 @@
-// Copyright 2014 Google Inc. All rights reserved.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// protoc plugin which converts .proto to schema for BigQuery.
-// It is spawned by protoc and generates schema for BigQuery, encoded in JSON.
-//
-// usage:
-//  $ bin/protoc --bq-schema_out=path/to/outdir foo.proto
-//
 package main
 
 import (
-	"encoding/json"
+	"./protos"
+
 	"flag"
 	"fmt"
 	"io"
@@ -29,8 +10,6 @@ import (
 	"os"
 	"path"
 	"strings"
-
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
@@ -47,13 +26,10 @@ var (
 	}
 )
 
-// Field describes the schema of a field in BigQuery.
+// Field describes the schema of a field in Hive.
 type Field struct {
-	Name        string   `json:"name"`
-	Type        string   `json:"type"`
-	Mode        string   `json:"mode"`
-	Description string   `json:"description,omitempty"`
-	Fields      []*Field `json:"fields,omitempty"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
 // ProtoPackage describes a package of Protobuf, which is an container of message types.
@@ -156,103 +132,158 @@ func (pkg *ProtoPackage) relativelyLookupPackage(name string) (*ProtoPackage, bo
 	return pkg, true
 }
 
+// https://docs.aws.amazon.com/athena/latest/ug/data-types.html
 var (
 	typeFromWKT = map[string]string{
-		".google.protobuf.Int32Value":  "INTEGER",
-		".google.protobuf.Int64Value":  "INTEGER",
-		".google.protobuf.UInt32Value": "INTEGER",
-		".google.protobuf.UInt64Value": "INTEGER",
-		".google.protobuf.DoubleValue": "FLOAT",
-		".google.protobuf.FloatValue":  "FLOAT",
-		".google.protobuf.BoolValue":   "BOOLEAN",
-		".google.protobuf.StringValue": "STRING",
-		".google.protobuf.BytesValue":  "BYTES",
-		".google.protobuf.Duration":    "STRING",
-		".google.protobuf.Timestamp":   "TIMESTAMP",
+		".google.protobuf.Int32Value":  "int",
+		".google.protobuf.Int64Value":  "bigint",
+		".google.protobuf.UInt32Value": "int",
+		".google.protobuf.UInt64Value": "bigint",
+		".google.protobuf.DoubleValue": "double",
+		".google.protobuf.FloatValue":  "float",
+		".google.protobuf.BoolValue":   "boolean",
+		".google.protobuf.StringValue": "varchar",
+		".google.protobuf.BytesValue":  "bynary",
+		".google.protobuf.Duration":    "varchar",
+		".google.protobuf.Timestamp":   "timestamp",
 	}
 	typeFromFieldType = map[descriptor.FieldDescriptorProto_Type]string{
-		descriptor.FieldDescriptorProto_TYPE_DOUBLE: "FLOAT",
-		descriptor.FieldDescriptorProto_TYPE_FLOAT:  "FLOAT",
+		descriptor.FieldDescriptorProto_TYPE_DOUBLE: "double",
+		descriptor.FieldDescriptorProto_TYPE_FLOAT:  "float",
 
-		descriptor.FieldDescriptorProto_TYPE_INT64:    "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_UINT64:   "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_INT32:    "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_UINT32:   "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_FIXED64:  "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_FIXED32:  "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_SFIXED32: "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_SFIXED64: "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_SINT32:   "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_SINT64:   "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_INT64:    "bigint",
+		descriptor.FieldDescriptorProto_TYPE_UINT64:   "bigint",
+		descriptor.FieldDescriptorProto_TYPE_INT32:    "int",
+		descriptor.FieldDescriptorProto_TYPE_UINT32:   "int",
+		descriptor.FieldDescriptorProto_TYPE_FIXED64:  "bigint",
+		descriptor.FieldDescriptorProto_TYPE_FIXED32:  "int",
+		descriptor.FieldDescriptorProto_TYPE_SFIXED32: "int",
+		descriptor.FieldDescriptorProto_TYPE_SFIXED64: "bigint",
+		descriptor.FieldDescriptorProto_TYPE_SINT32:   "int",
+		descriptor.FieldDescriptorProto_TYPE_SINT64:   "bigint",
 
-		descriptor.FieldDescriptorProto_TYPE_STRING: "STRING",
-		descriptor.FieldDescriptorProto_TYPE_BYTES:  "BYTES",
-		descriptor.FieldDescriptorProto_TYPE_ENUM:   "STRING",
+		descriptor.FieldDescriptorProto_TYPE_STRING: "varchar",
+		descriptor.FieldDescriptorProto_TYPE_BYTES:  "bynary",
+		descriptor.FieldDescriptorProto_TYPE_ENUM:   "varchar",
 
-		descriptor.FieldDescriptorProto_TYPE_BOOL: "BOOLEAN",
+		descriptor.FieldDescriptorProto_TYPE_BOOL: "boolean",
 
-		descriptor.FieldDescriptorProto_TYPE_GROUP:   "RECORD",
-		descriptor.FieldDescriptorProto_TYPE_MESSAGE: "RECORD",
+		descriptor.FieldDescriptorProto_TYPE_GROUP:   "record",
+		descriptor.FieldDescriptorProto_TYPE_MESSAGE: "record",
 	}
-
 	modeFromFieldLabel = map[descriptor.FieldDescriptorProto_Label]string{
-		descriptor.FieldDescriptorProto_LABEL_OPTIONAL: "NULLABLE",
-		descriptor.FieldDescriptorProto_LABEL_REQUIRED: "REQUIRED",
-		descriptor.FieldDescriptorProto_LABEL_REPEATED: "REPEATED",
+		descriptor.FieldDescriptorProto_LABEL_OPTIONAL: "nullable",
+		descriptor.FieldDescriptorProto_LABEL_REQUIRED: "required",
+		descriptor.FieldDescriptorProto_LABEL_REPEATED: "repeated",
 	}
 )
 
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions) (*Field, error) {
-	field := &Field{
+func getField(desc *descriptor.FieldDescriptorProto, msgOpts *protos.HiveMessageOptions) (field *Field, fieldMode string, err error) {
+	field = &Field{
 		Name: desc.GetName(),
 	}
+
 	if msgOpts.GetUseJsonNames() && desc.GetJsonName() != "" {
 		field.Name = desc.GetJsonName()
 	}
 
-	var ok bool
-	field.Mode, ok = modeFromFieldLabel[desc.GetLabel()]
+	fieldMode, ok := modeFromFieldLabel[desc.GetLabel()]
 	if !ok {
-		return nil, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
+		return nil, fieldMode, fmt.Errorf("unrecognized field label: %s", desc.GetLabel().String())
 	}
 
 	field.Type, ok = typeFromFieldType[desc.GetType()]
 	if !ok {
-		return nil, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
+		return nil, fieldMode, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
 	}
 
 	opts := desc.GetOptions()
-	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
-		rawOpt, err := proto.GetExtension(opts, protos.E_Bigquery)
+	if opts != nil && proto.HasExtension(opts, protos.E_Hive) {
+		rawOpt, err := proto.GetExtension(opts, protos.E_Hive)
 		if err != nil {
-			return nil, err
+			return nil, fieldMode, err
 		}
-		opt := *rawOpt.(*protos.BigQueryFieldOptions)
+		opt := *rawOpt.(*protos.HiveFieldOptions)
 		if opt.Ignore {
-			// skip the field below
-			return nil, nil
+			fieldMode = "ignore"
+			return field, fieldMode, nil
 		}
-
-		if opt.Require {
-			field.Mode = "REQUIRED"
-		}
-
 		if len(opt.TypeOverride) > 0 {
 			field.Type = opt.TypeOverride
 		}
-
 		if len(opt.Name) > 0 {
 			field.Name = opt.Name
 		}
-
-		if len(opt.Description) > 0 {
-			field.Description = opt.Description
-		}
 	}
 
-	if field.Type != "RECORD" {
+	return field, fieldMode, nil
+}
+
+func convertFieldAsStr(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.HiveMessageOptions) (string, error) {
+	field, fieldMode, err := getField(desc, msgOpts)
+	if err != nil {
+		return "", nil
+	}
+	if fieldMode == "ignore" {
+		return "", nil
+	}
+
+	field.Name = field.Name + ":" + field.Type
+
+	if field.Type != "record" {
+		if fieldMode == "repeated" {
+			field.Type = field.Name + ":array<" + field.Type + ">"
+		}
+		return field.Name, nil
+	}
+
+	if t, ok := typeFromWKT[desc.GetTypeName()]; ok {
+		field.Type = t
+		if fieldMode == "repeated" {
+			field.Name = field.Name + ":array<" + field.Type + ">"
+		}
+		return field.Name, nil
+	}
+
+	recordType, ok := curPkg.lookupType(desc.GetTypeName())
+	if !ok {
+		return "", fmt.Errorf("no such message type named %s", desc.GetTypeName())
+	}
+
+	fieldMsgOpts, err := getHiveMessageOptions(recordType)
+	if err != nil {
+		return "", err
+	}
+
+	fields, err := convertMessageTypeAsStr(curPkg, recordType, fieldMsgOpts)
+	if err != nil {
+		return "", err
+	}
+
+	field.Type = "struct<" + fields + ">"
+	if fieldMode == "repeated" {
+		field.Type = "array<struct<" + fields + ">>"
+	}
+
+	return field.Type, nil
+}
+
+func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.HiveMessageOptions) (*Field, error) {
+	field, fieldMode, err := getField(desc, msgOpts)
+	if err != nil {
+		return nil, nil
+	}
+	if fieldMode == "ignore" {
+		return nil, nil
+	}
+
+	if field.Type != "record" {
+		if fieldMode == "repeated" {
+			field.Type = "array<" + field.Type + ">"
+		}
 		return field, nil
 	}
+
 	if t, ok := typeFromWKT[desc.GetTypeName()]; ok {
 		field.Type = t
 		return field, nil
@@ -262,23 +293,49 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", desc.GetTypeName())
 	}
-	fieldMsgOpts, err := getBigqueryMessageOptions(recordType)
-	if err != nil {
-		return nil, err
-	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts)
+
+	fieldMsgOpts, err := getHiveMessageOptions(recordType)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-		return nil, nil
+	fields, err := convertMessageTypeAsStr(curPkg, recordType, fieldMsgOpts)
+	if err != nil {
+		return nil, err
+	}
+
+	field.Type = "struct<" + fields + ">"
+	if fieldMode == "repeated" {
+		field.Type = "array<struct<" + fields + ">>"
 	}
 
 	return field, nil
 }
 
-func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions) (schema []*Field, err error) {
+func convertMessageTypeAsStr(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.HiveMessageOptions) (fields string, err error) {
+	if glog.V(4) {
+		glog.Info("Converting message: ", proto.MarshalTextString(msg))
+	}
+	var fieldList []string
+
+	for _, fieldDesc := range msg.GetField() {
+		field, err := convertFieldAsStr(curPkg, fieldDesc, opts)
+		if err != nil {
+			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
+			return "", err
+		}
+
+		// if we got no error and the field is nil, skip it
+		if field != "" {
+			fieldList = append(fieldList, field)
+			continue
+		}
+	}
+	fields = strings.Join(fieldList, ",")
+	return
+}
+
+func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.HiveMessageOptions) (schema []*Field, err error) {
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
@@ -306,9 +363,9 @@ var e_TableName = &proto.ExtensionDesc{
 	ExtendedType:  (*descriptor.MessageOptions)(nil),
 	ExtensionType: (*string)(nil),
 	Field:         1021,
-	Name:          "gen_bq_schema.table_name",
+	Name:          "gen_hive_schema.table_name",
 	Tag:           "bytes,1021,opt,name=table_name,json=tableName",
-	Filename:      "bq_table.proto",
+	Filename:      "hive_table.proto",
 }
 
 func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
@@ -320,7 +377,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 
 	response := []*plugin.CodeGeneratorResponse_File{}
 	for _, msg := range file.GetMessageType() {
-		opts, err := getBigqueryMessageOptions(msg)
+		opts, err := getHiveMessageOptions(msg)
 		if err != nil {
 			return nil, err
 		}
@@ -340,14 +397,14 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 			return nil, err
 		}
 
-		jsonSchema, err := json.MarshalIndent(schema, "", " ")
+		jsonSchema, err := JSONMarshalIndent(schema, "", " ")
 		if err != nil {
 			glog.Error("Failed to encode schema", err)
 			return nil, err
 		}
 
 		resFile := &plugin.CodeGeneratorResponse_File{
-			Name:    proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName)),
+			Name:    proto.String(fmt.Sprintf("schemas/%s.json", tableName)),
 			Content: proto.String(string(jsonSchema)),
 		}
 		response = append(response, resFile)
@@ -356,23 +413,23 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	return response, nil
 }
 
-// getBigqueryMessageOptions returns the bigquery options for the given message.
+// getHiveMessageOptions returns the hive options for the given message.
 // If an error is encountered, it is returned instead. If no error occurs, but
-// the message has no gen_bq_schema.bigquery_opts option, this function returns
+// the message has no gen_hive_schema.hive_opts option, this function returns
 // nil, nil.
-func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQueryMessageOptions, error) {
+func getHiveMessageOptions(msg *descriptor.DescriptorProto) (*protos.HiveMessageOptions, error) {
 	options := msg.GetOptions()
 	if options == nil {
 		return nil, nil
 	}
 
-	if !proto.HasExtension(options, protos.E_BigqueryOpts) {
+	if !proto.HasExtension(options, protos.E_HiveOpts) {
 		return nil, nil
 	}
 
-	optionValue, err := proto.GetExtension(options, protos.E_BigqueryOpts)
+	optionValue, err := proto.GetExtension(options, protos.E_HiveOpts)
 	if err == nil {
-		return optionValue.(*protos.BigQueryMessageOptions), nil
+		return optionValue.(*protos.HiveMessageOptions), nil
 	}
 
 	// try to decode the extension using old definition before failing
@@ -382,7 +439,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 	}
 	// translate this old definition to the expected message type
 	name := *optionValue.(*string)
-	return &protos.BigQueryMessageOptions{
+	return &protos.HiveMessageOptions{
 		TableName: name,
 	}, nil
 }

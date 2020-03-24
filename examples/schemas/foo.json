@@ -1,0 +1,30 @@
+[
+ {
+  "name": "a",
+  "type": "int"
+ },
+ {
+  "name": "b",
+  "type": "struct<a:int>"
+ },
+ {
+  "name": "c",
+  "type": "array<varchar>"
+ },
+ {
+  "name": "e",
+  "type": "TIMESTAMP"
+ },
+ {
+  "name": "f",
+  "type": "array<struct<a:int>>"
+ },
+ {
+  "name": "wkt1",
+  "type": "int"
+ },
+ {
+  "name": "wkt2",
+  "type": "timestamp"
+ }
+]

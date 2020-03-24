@@ -13,7 +13,7 @@
 // limitations under the License.
 
 syntax = "proto3";
-package gen_bq_schema;
+package gen_hive_schema;
 
 option go_package = "protos";
 
@@ -27,27 +27,27 @@ extend google.protobuf.MessageOptions {
   //
   // If you are upgrading this library and find that protoc begins to reject
   // your proto files, you'll need to change all lines that look like so:
-  //    option (gen_bq_schema.table_name) = "foo";
+  //    option (gen_hive_schema.table_name) = "foo";
   // to instead look like this:
-  //    option (gen_bq_schema.bigquery_opts).table_name = "foo";
+  //    option (gen_hive_schema.hive_opts).table_name = "foo";
   // There was no backwards compatible way to make this change. Sorry for
   // the inconvenience.
 
 
-  // BigQuery message schema generation options.
+  // Hive message schema generation options.
   //
   // The field number is a globally unique id for this option, assigned by
   // protobuf-global-extension-registry@google.com
-  BigQueryMessageOptions bigquery_opts = 1021;
+  HiveMessageOptions hive_opts = 1021;
 }
 
-message BigQueryMessageOptions {
-  // Specifies a name of table in BigQuery for the message.
+message HiveMessageOptions {
+  // Specifies a name of table in Hive for the message.
   //
-  // If not blank, indicates the message is a type of record to be stored into BigQuery.
+  // If not blank, indicates the message is a type of record to be stored into Hive.
   string table_name = 1;
 
-  // If true, BigQuery field names will default to a field's JSON name,
+  // If true, Hive field names will default to a field's JSON name,
   // not its original/proto field name.
   bool use_json_names = 2;
 }

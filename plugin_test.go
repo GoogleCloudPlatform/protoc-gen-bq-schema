@@ -24,7 +24,7 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
-// schema is an internal representation of generated BigQuery schema
+// schema is an internal representation of generated Hive schema
 type schema []map[string]interface{}
 
 func joinNames(targets map[string]*schema) (result string) {
@@ -99,7 +99,7 @@ func TestSimple(t *testing.T) {
 				message_type <
 					name: "FooProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,
@@ -110,7 +110,7 @@ func TestSimple(t *testing.T) {
 		})
 }
 
-// TestIgnoreNonTargetMessage checks if the generator ignores messages without gen_bq_schema.table_name option.
+// TestIgnoreNonTargetMessage checks if the generator ignores messages without gen_hive_schema.table_name option.
 func TestIgnoreNonTargetMessage(t *testing.T) {
 	testConvert(t, `
 			file_to_generate: "foo.proto"
@@ -124,7 +124,7 @@ func TestIgnoreNonTargetMessage(t *testing.T) {
 				message_type <
 					name: "BarProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "bar_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "bar_table"> >
 				>
 				message_type <
 					name: "BazProto"
@@ -149,7 +149,7 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 				message_type <
 					name: "FooProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "foo_table"> >
 				>
 			>
 			proto_file <
@@ -158,7 +158,7 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 				message_type <
 					name: "BarProto"
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "bar_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "bar_table"> >
 				>
 			>
 		`,
@@ -241,7 +241,7 @@ func TestTypes(t *testing.T) {
 						name: "EmptyNested1"
 					>
 					enum_type < name: "Enum1" value < name: "E1" number: 1 > value < name: "E2" number: 2 > >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "foo_table"> >
 				>
 			>
 			proto_file <
@@ -364,7 +364,7 @@ func TestWellKnownTypes(t *testing.T) {
 						name: "t" number: 11 type: TYPE_MESSAGE label: LABEL_OPTIONAL
 						type_name: ".google.protobuf.Timestamp"
 					>
-					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,
@@ -397,7 +397,7 @@ func TestModes(t *testing.T) {
 					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					field < name: "i2" number: 2 type: TYPE_INT32 label: LABEL_REQUIRED >
 					field < name: "i3" number: 3 type: TYPE_INT32 label: LABEL_REPEATED >
-					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+					options < [gen_hive_schema.hive_opts] <table_name: "foo_table"> >
 				>
 			>
 		`,

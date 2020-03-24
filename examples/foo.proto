@@ -1,13 +1,13 @@
 syntax = "proto2";
 package foo;
-import "bq_table.proto";
-import "bq_field.proto";
+import "hive_table.proto";
+import "hive_field.proto";
 
 import "google/protobuf/wrappers.proto";
 import "google/protobuf/timestamp.proto";
 
-message Bar {
-  option (gen_bq_schema.bigquery_opts).table_name = "bar_table";
+message Foo {
+  option (gen_hive_schema.hive_opts).table_name = "foo";
 
   message Nested {
     repeated int32 a = 1;
@@ -17,18 +17,20 @@ message Bar {
   optional Nested b = 2;
   repeated string c = 3;
 
-  optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
+  optional bool d = 4 [(gen_hive_schema.hive).ignore = true];
   optional uint64 e = 5 [
-    (gen_bq_schema.bigquery) = {
+    (gen_hive_schema.hive) = {
       require: true
       type_override: 'TIMESTAMP'
     }
   ];
 
+  repeated Nested f = 6;
+
   optional google.protobuf.Int32Value wkt1 = 11;
   optional google.protobuf.Timestamp wkt2 = 12;
 }
 
-message Baz {
+message Faz {
   required int32 a = 1;
 }

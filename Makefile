@@ -12,12 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BQ_PLUGIN=bin/protoc-gen-bq-schema
+GOPATH:=${PWD}:${GOPATH}
+
+BQ_PLUGIN=bin/protoc-gen-hive-schema
 GO_PLUGIN=bin/protoc-gen-go
 PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog
-PROTO_SRC=bq_table.proto bq_field.proto
-PROTO_GENFILES=protos/bq_table.pb.go protos/bq_field.pb.go
+PROTO_SRC=hive_table.proto hive_field.proto
+PROTO_GENFILES=protos/hive_table.pb.go protos/hive_field.pb.go
 PROTO_PKG=github.com/golang/protobuf/proto
 PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
 EXAMPLES_PROTO=examples/foo.proto
@@ -51,6 +53,6 @@ realclean: distclean
 	rm -f $(PROTO_GENFILES)
 
 examples: $(BQ_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=$(BQ_PLUGIN) --bq-schema_out=examples $(EXAMPLES_PROTO)
+	protoc -I. -Ivendor/protobuf --plugin=$(BQ_PLUGIN) --hive-schema_out=examples $(EXAMPLES_PROTO)
 
 .PHONY: goprotobuf glog

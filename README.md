@@ -1,65 +1,23 @@
-# protoc-gen-bq-schema
+# protoc-gen-hive-schema
 
+> Hive/Glue types: https://docs.aws.amazon.com/athena/latest/ug/data-types.html
 
-protoc-gen-bq-schema is a plugin for [ProtocolBuffer compiler](https://github.com/google/protobuf).
-It converts messages written in .proto format into schema files in JSON for BigQuery.
-So you can reuse existing data definitions in .proto for BigQuery with this plugin.
-
-## Installation
- go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
-
-## Usage
- protoc --bq-schema\_out=path/to/outdir foo.proto
-
-`protoc` and `protoc-gen-bq-schema` commands must be found in $PATH.
-
-The generated JSON schema files are suffixed with `.schema` and their base names are named
-after their package names and `bq_table_name` options.
-
-If you do not already have the standard google protobuf libraries in your `proto_path`, you'll need to specify them directly on the command line (and potentially need to copy `bq_schema.proto` into a proto_path directory as well), like this:
+## Setup
+Requires:
+* `protoc` (http://google.github.io/proto-lens/installing-protoc.html)
 
 ```sh
-protoc --bq-schema_out=path/to/out/dir foo.proto --proto_path=. --proto_path=<path_to_google_proto_folder>/src
+export PATH=$PWD/bin:$PATH
+make install
 ```
 
-### Example
-Suppose that we have the following foo.proto.
+## Usage
 
-```protobuf
-syntax = "proto2";
-package foo;
-import "bq_table.proto";
-import "bq_field.proto";
-
-message Bar {
-  option (gen_bq_schema.bigquery_opts).table_name = "bar_table";
-
-  message Nested {
-    repeated int32 a = 1;
-  }
-
-  required int32 a = 1;
-  optional Nested b = 2;
-  repeated string c = 3;
-
-  optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
-  optional uint64 e = 5 [
-    (gen_bq_schema.bigquery) = {
-      require: true
-      type_override: 'TIMESTAMP'
-    }
-  ];
-}
-
-message Baz {
-  required int32 a = 1;
-}
+```sh
+protoc --hive-schema_out=examples examples/foo.proto examples/bar.proto
 ```
 
-`protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
-The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
+---
 
-## License
-
-protoc-gen-bq-schema is licensed under the Apache License version 2.0.
-This is not an official Google product.
+### TODO
+- [ ] Re-implement tests

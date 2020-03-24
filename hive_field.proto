@@ -13,18 +13,18 @@
 // limitations under the License.
 
 syntax = "proto3";
-package gen_bq_schema;
+package gen_hive_schema;
 
 option go_package = "protos";
 
 import "google/protobuf/descriptor.proto";
 
 
-// Message containing options related to BigQuery schema generation
+// Message containing options related to Hive schema generation
 // and management via Protobuf.
-message BigQueryFieldOptions {
+message HiveFieldOptions {
   // Flag to specify that a field should be marked as 'REQUIRED' when
-  // used to generate schema for BigQuery.
+  // used to generate schema for Hive.
   bool require = 1;
 
   // Optionally override whatever type is resolved by the schema
@@ -33,19 +33,19 @@ message BigQueryFieldOptions {
   // be structured as 'INTEGER' fields.
   string type_override = 2;
 
-  // Optionally omit a field from BigQuery schema.
+  // Optionally omit a field from Hive schema.
   bool ignore = 3;
 
-  // Set the description for a field in BigQuery schema.
+  // Set the description for a field in Hive schema.
   string description = 4;
 
-  // Customize the name of the field in the BigQuery schema.
+  // Customize the name of the field in the Hive schema.
   string name = 5;
 }
 
 
 extend google.protobuf.FieldOptions {
-  // BigQuery field schema generation options.
-  BigQueryFieldOptions bigquery = 1021;
+  // Hive field schema generation options.
+  HiveFieldOptions hive = 1021;
 }
 

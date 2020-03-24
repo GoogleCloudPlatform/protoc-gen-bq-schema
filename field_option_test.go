@@ -38,13 +38,13 @@ func TestIgnore(t *testing.T) {
 					type: TYPE_INT32
 					label: LABEL_OPTIONAL
 					options <
-						[gen_bq_schema.bigquery] <
+						[gen_hive_schema.hive] <
 							ignore: true
 						>
 					>
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 					>
 				>
@@ -71,13 +71,13 @@ func TestRequire(t *testing.T) {
 					type: TYPE_INT32
 					label: LABEL_OPTIONAL
 					options <
-						[gen_bq_schema.bigquery] <
+						[gen_hive_schema.hive] <
 							require: true
 						>
 					>
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 					>
 				>
@@ -104,13 +104,13 @@ func TestTypeOverride(t *testing.T) {
 					type: TYPE_INT32
 					label: LABEL_OPTIONAL
 					options <
-						[gen_bq_schema.bigquery] <
+						[gen_hive_schema.hive] <
 							type_override: "FLOAT"
 						>
 					>
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 					>
 				>
@@ -137,13 +137,13 @@ func TestDescription(t *testing.T) {
 					type: TYPE_INT32
 					label: LABEL_OPTIONAL
 					options <
-						[gen_bq_schema.bigquery] <
+						[gen_hive_schema.hive] <
 							description: "bar"
 						>
 					>
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 					>
 				>
@@ -170,13 +170,13 @@ func TestNameOverride(t *testing.T) {
 					type: TYPE_INT32
 					label: LABEL_OPTIONAL
 					options <
-						[gen_bq_schema.bigquery] <
+						[gen_hive_schema.hive] <
 							name: "Integer1"
 						>
 					>
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 					>
 				>
@@ -211,7 +211,7 @@ func TestJsonNames(t *testing.T) {
 					label: LABEL_OPTIONAL
 				>
 				options <
-					[gen_bq_schema.bigquery_opts]: <
+					[gen_hive_schema.hive_opts]: <
 						table_name: "foo_table"
 						use_json_names: true
 					>

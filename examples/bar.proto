@@ -1,0 +1,11 @@
+syntax = "proto2";
+package bar;
+import "hive_table.proto";
+import "hive_field.proto";
+
+message Bar {
+  option (gen_hive_schema.hive_opts).table_name = "bar";
+
+  optional bool d = 4;
+  optional uint64 e = 5 [(gen_hive_schema.hive).ignore = true];
+}
