@@ -2,12 +2,14 @@
  {
   "name": "a",
   "type": "INTEGER",
-  "mode": "REQUIRED"
+  "mode": "REQUIRED",
+  "description": "This is a"
  },
  {
   "name": "b",
   "type": "RECORD",
   "mode": "NULLABLE",
+  "description": "This is b",
   "fields": [
    {
     "name": "a",
@@ -19,21 +21,25 @@
  {
   "name": "c",
   "type": "STRING",
-  "mode": "REPEATED"
+  "mode": "REPEATED",
+  "description": "This is c\n\nAnd this is c, too"
  },
  {
   "name": "e",
   "type": "TIMESTAMP",
-  "mode": "REQUIRED"
+  "mode": "REQUIRED",
+  "description": "This is e"
  },
  {
   "name": "wkt1",
   "type": "INTEGER",
-  "mode": "NULLABLE"
+  "mode": "NULLABLE",
+  "description": "This is wkt1"
  },
  {
   "name": "wkt2",
   "type": "TIMESTAMP",
-  "mode": "NULLABLE"
+  "mode": "NULLABLE",
+  "description": "This is wkt2"
  }
 ]
