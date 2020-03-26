@@ -51,7 +51,7 @@ func TestIgnore(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE"}
 		]`,
 	})
@@ -84,7 +84,7 @@ func TestRequire(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "i1", "type": "INTEGER", "mode": "REQUIRED"}
 		]`,
 	})
@@ -117,7 +117,7 @@ func TestTypeOverride(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "i1", "type": "FLOAT", "mode": "NULLABLE"}
 		]`,
 	})
@@ -150,7 +150,7 @@ func TestDescription(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE", "description": "bar"}
 		]`,
 	})
@@ -183,7 +183,7 @@ func TestNameOverride(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "Integer1", "type": "INTEGER", "mode": "NULLABLE"}
 		]`,
 	})
@@ -219,7 +219,7 @@ func TestJsonNames(t *testing.T) {
 			>
 		>
 	`, map[string]string{
-		"example_package/foo_table.schema": `[
+		"foo_table.schema": `[
 			{ "name": "int1", "type": "INTEGER", "mode": "NULLABLE"},
 			{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE"}
 		]`,

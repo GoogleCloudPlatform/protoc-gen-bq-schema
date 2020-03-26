@@ -104,7 +104,7 @@ func TestSimple(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
 			]`,
 		})
@@ -133,7 +133,7 @@ func TestIgnoreNonTargetMessage(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/bar_table.schema": `[
+			"bar_table.schema": `[
 				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
 			]`,
 		})
@@ -163,7 +163,7 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
 			]`,
 		})
@@ -256,7 +256,7 @@ func TestTypes(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i32", "type": "INTEGER", "mode": "NULLABLE" },
 				{ "name": "i64", "type": "INTEGER", "mode": "NULLABLE" },
 				{ "name": "ui32", "type": "INTEGER", "mode": "NULLABLE" },
@@ -369,7 +369,7 @@ func TestWellKnownTypes(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i32", "type": "INTEGER", "mode": "NULLABLE" },
 				{ "name": "i64", "type": "INTEGER", "mode": "NULLABLE" },
 				{ "name": "ui32", "type": "INTEGER", "mode": "NULLABLE" },
@@ -402,7 +402,7 @@ func TestModes(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" },
 				{ "name": "i2", "type": "INTEGER", "mode": "REQUIRED" },
 				{ "name": "i3", "type": "INTEGER", "mode": "REPEATED" }
@@ -426,7 +426,7 @@ func TestFallbackToOldOptionDefinition(t *testing.T) {
 			>
 		`,
 		map[string]string{
-			"example_package/nested/foo_table.schema": `[
+			"foo_table.schema": `[
 				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
 			]`,
 		}, func(req *plugin.CodeGeneratorRequest) {
