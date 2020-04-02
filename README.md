@@ -59,6 +59,34 @@ message Baz {
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
+## Special Case - OneOf Repeated fields of type Empty Message
+
+Take the following example:
+
+```proto
+message PartnerPositionApplicationRequiresReviewEvent {
+  option (gen_bq_schema.bigquery_opts).table_name = "partner_position_application_requires_review";
+
+  string application_id = 1;
+  repeated ApplicationReviewReason reasons = 2;
+}
+
+message ApplicationReviewReason {
+  oneof reason {
+    ReasonAddressMatch address_match = 1;
+    ReasonHasCriminalRecord has_criminal_record = 2;
+  }
+}
+
+message ReasonAddressMatch {
+  repeated string address_partner_ids = 1;
+}
+
+message ReasonHasCriminalRecord {}
+```
+
+The reason `has_criminal_record` is message type `ReasonHasCriminalRecord` which has no fields. In this instance the message is used like a boolean. Rather than discard this field in the BigQuery schema, a field of type `BOOLEAN` is created instead.
+
 ## License
 
 protoc-gen-bq-schema is licensed under the Apache License version 2.0.

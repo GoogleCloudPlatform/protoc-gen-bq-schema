@@ -305,6 +305,9 @@ func TestTypes(t *testing.T) {
 						{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE" },
 						{ "name": "i3", "type": "INTEGER", "mode": "NULLABLE" }
 					]
+				},
+				{
+					"name": "msg2", "type": "BOOLEAN", "mode": "NULLABLE"
 				}
 			]`,
 		})
