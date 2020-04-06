@@ -43,6 +43,8 @@ var globalPkg = &ProtoPackage{
 	parent:   nil,
 	children: make(map[string]*ProtoPackage),
 	types:    make(map[string]*descriptor.DescriptorProto),
+	comments: make(map[string]Comments),
+	path:     make(map[string]string),
 }
 
 // Field describes the schema of a field in BigQuery.
