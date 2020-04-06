@@ -281,8 +281,15 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return nil, err
 	}
 
-	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-		return nil, nil
+	// Convert zero field RECORDS to a single boolean where the presence of
+	// the message is interpreted as true. This only really applies in limited
+	// use-cases e.g. where a oneOf value of empty message is used like a bool
+	if len(field.Fields) == 0 {
+		return &Field{
+			Name: desc.GetName(),
+			Type: "BOOLEAN",
+			Mode: "NULLABLE",
+		}, nil
 	}
 
 	return field, nil
