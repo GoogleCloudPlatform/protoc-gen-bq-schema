@@ -202,7 +202,12 @@ var (
 	}
 )
 
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions) (*Field, error) {
+func convertField(
+	curPkg *ProtoPackage,
+	desc *descriptor.FieldDescriptorProto,
+	msgOpts *protos.BigQueryMessageOptions,
+	parentMessages map[*descriptor.DescriptorProto]bool) (*Field, error) {
+
 	field := &Field{
 		Name: desc.GetName(),
 	}
@@ -266,7 +271,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	if err != nil {
 		return nil, err
 	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts)
+	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages)
 	if err != nil {
 		return nil, err
 	}
@@ -278,13 +283,22 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	return field, nil
 }
 
-func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions) (schema []*Field, err error) {
+func convertMessageType(
+	curPkg *ProtoPackage,
+	msg *descriptor.DescriptorProto,
+	opts *protos.BigQueryMessageOptions,
+	parentMessages map[*descriptor.DescriptorProto]bool) (schema []*Field, err error) {
+	if parentMessages[msg] {
+		glog.Infof("Detected recursion for message %s, ignoring subfields", *msg.Name)
+		return
+	}
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
 
+	parentMessages[msg] = true
 	for _, fieldDesc := range msg.GetField() {
-		field, err := convertField(curPkg, fieldDesc, opts)
+		field, err := convertField(curPkg, fieldDesc, opts, parentMessages)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -295,6 +309,7 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, o
 			schema = append(schema, field)
 		}
 	}
+	parentMessages[msg] = false
 	return
 }
 
@@ -334,7 +349,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
-		schema, err := convertMessageType(pkg, msg, opts)
+		schema, err := convertMessageType(pkg, msg, opts, make(map[*descriptor.DescriptorProto]bool))
 		if err != nil {
 			glog.Errorf("Failed to convert %s: %v", name, err)
 			return nil, err
