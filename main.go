@@ -22,11 +22,9 @@ package main
 
 import (
 	"encoding/json"
-	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"path"
 	"strings"
 
@@ -432,34 +430,3 @@ func convertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 	return Convert(req)
 }
 
-func main() {
-	flag.Parse()
-	ok := true
-	glog.Info("Processing code generator request")
-	res, err := convertFrom(os.Stdin)
-	if err != nil {
-		ok = false
-		if res == nil {
-			message := fmt.Sprintf("Failed to read input: %v", err)
-			res = &plugin.CodeGeneratorResponse{
-				Error: &message,
-			}
-		}
-	}
-
-	glog.Info("Serializing code generator response")
-	data, err := proto.Marshal(res)
-	if err != nil {
-		glog.Fatal("Cannot marshal response", err)
-	}
-	_, err = os.Stdout.Write(data)
-	if err != nil {
-		glog.Fatal("Failed to write response", err)
-	}
-
-	if ok {
-		glog.Info("Succeeded to process code generator request")
-	} else {
-		glog.Info("Failed to process code generator but successfully sent the error to protoc")
-	}
-}
