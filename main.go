@@ -18,7 +18,7 @@
 // usage:
 //  $ bin/protoc --bq-schema_out=path/to/outdir foo.proto
 //
-package main
+package protoc_gen_bq_schema
 
 import (
 	"encoding/json"
@@ -28,7 +28,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+	"github.com/faceit/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
