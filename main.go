@@ -387,7 +387,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 	}, nil
 }
 
-func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
+func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
@@ -429,7 +429,7 @@ func convertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 	}
 
 	glog.V(1).Info("Converting input")
-	return convert(req)
+	return Convert(req)
 }
 
 func main() {
