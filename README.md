@@ -90,29 +90,7 @@ message Bar {
  }
 ```
 
-Policy tags must take the form `projects/project-id/locations/location/taxonomies/taxonomy-id/policyTags/policytag-id` and so users can either specify this form in the `.proto` file, or use an alias which refers to an entry in a config file, e.g.
-
-`policy_tags.env`
-```dotenv
-pii=projects/my-project/locations/EU/taxonomies/142965068551231978/policyTags/projects/uw-partner-dev/locations/eu/taxonomies/142935068551331978/policyTags/9114836628731764131
-```
-
-`protoc --bq-schema_out=policy_tags_config_path=policy_tags.env:. foo.proto` will generate a file named `foo/bar_table.schema`, but in this instance the BigQuery field is generated like so:
-
-```json
-{
-  "name": "first_name",
-  "type": "STRING",
-  "mode": "NULLABLE",
-  "policyTags": {
-   "names": [
-    "projects/my-project/locations/EU/taxonomies/142965068551231978/policyTags/projects/uw-partner-dev/locations/eu/taxonomies/142935068551331978/policyTags/9114836628731764131"
-   ]
-  }
- }
-```
-
-If no config file is specified as input parameter, or a file is specified by no Policy Tag match is found, then the text provided by the user for the Policy Tag is used.
+Policy tags must take the form `projects/project-id/locations/location/taxonomies/taxonomy-id/policyTags/policytag-id`
 
 ## Special Case - OneOf Repeated fields of type Empty Message
 

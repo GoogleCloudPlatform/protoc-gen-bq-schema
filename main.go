@@ -30,12 +30,11 @@ import (
 	"path"
 	"strings"
 
-	"github.com/utilitywarehouse/godotenv"
 	"github.com/utilitywarehouse/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
-	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
@@ -53,7 +52,7 @@ type Field struct {
 	Name        string      `json:"name"`
 	Type        string      `json:"type"`
 	Mode        string      `json:"mode"`
-	PolicyTags  *PolicyTags  `json:"policyTags,omitempty"`
+	PolicyTags  *PolicyTags `json:"policyTags,omitempty"`
 	Description string      `json:"description,omitempty"`
 	Fields      []*Field    `json:"fields,omitempty"`
 }
@@ -216,14 +215,7 @@ var (
 	}
 )
 
-func getPolicyTagString(providedString string, policyTags map[string]string) string {
-	if tag, ok := policyTags[providedString]; ok {
-		return tag
-	}
-	return providedString
-}
-
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions, comments Comments, path string, policyTags map[string]string) (*Field, error) {
+func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions, comments Comments, path string) (*Field, error) {
 	field := &Field{
 		Name: desc.GetName(),
 	}
@@ -275,7 +267,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		}
 
 		if len(opt.PolicyTags) > 0 {
-			field.PolicyTags = &PolicyTags{Names:[]string{getPolicyTagString(opt.PolicyTags, policyTags)}}
+			field.PolicyTags = &PolicyTags{Names:[]string{opt.PolicyTags}}
 		}
 	}
 
@@ -295,7 +287,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	if err != nil {
 		return nil, err
 	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, comments, path, policyTags)
+	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, comments, path)
 	if err != nil {
 		return nil, err
 	}
@@ -314,14 +306,14 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	return field, nil
 }
 
-func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions, comments Comments, path string, policyTags map[string]string) (schema []*Field, err error) {
+func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions, comments Comments, path string) (schema []*Field, err error) {
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
 
 	for fieldIndex, fieldDesc := range msg.GetField() {
 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
-		field, err := convertField(curPkg, fieldDesc, opts, comments, fieldCommentPath, policyTags)
+		field, err := convertField(curPkg, fieldDesc, opts, comments, fieldCommentPath)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -348,7 +340,7 @@ var e_TableName = &proto.ExtensionDesc{
 	Filename:      "bq_table.proto",
 }
 
-func convertFile(file *descriptor.FileDescriptorProto, policyTags map[string]string) ([]*plugin.CodeGeneratorResponse_File, error) {
+func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
@@ -376,7 +368,7 @@ func convertFile(file *descriptor.FileDescriptorProto, policyTags map[string]str
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
-		schema, err := convertMessageType(pkg, msg, opts, comments, path, policyTags)
+		schema, err := convertMessageType(pkg, msg, opts, comments, path)
 		if err != nil {
 			glog.Errorf("Failed to convert %s: %v", name, err)
 			return nil, err
@@ -429,42 +421,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 	}, nil
 }
 
-func getInputParameters(req *plugin.CodeGeneratorRequest) map[string]string {
-	parameters := req.GetParameter()
-	extractedParams := make(map[string]string)
-
-	kvPairs := strings.Split(parameters, ",")
-	for _, element := range kvPairs {
-		kv := strings.Split(element, "=")
-		if len(kv) == 2 {
-			extractedParams[kv[0]] = kv[1]
-		}
-	}
-	return extractedParams
-}
-
-func getPolicyTags(req *plugin.CodeGeneratorRequest) (map[string]string, error) {
-	parameters := getInputParameters(req)
-
-	if val, ok := parameters["policy_tags_config_path"]; ok {
-		file, err := os.Open(val)
-		if err != nil {
-			return nil, fmt.Errorf("failed reading policy tags config file, %q", err)
-		}
-		myEnv, err := godotenv.Parse(file)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse policy tags config file, %q", err)
-		}
-		return myEnv, nil
-	}
-	return nil, nil
-}
-
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
-	policyTags, err := getPolicyTags(req)
-	if err != nil {
-		return nil, err
-	}
 
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
@@ -481,7 +438,7 @@ func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	for _, file := range req.GetProtoFile() {
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
-			converted, err := convertFile(file, policyTags)
+			converted, err := convertFile(file)
 			if err != nil {
 				res.Error = proto.String(fmt.Sprintf("Failed to convert %s: %v", file.GetName(), err))
 				return res, err
