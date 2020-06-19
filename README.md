@@ -56,6 +56,9 @@ message Baz {
 }
 ```
 
+`protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
+The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
+
 ### Example - Policy Tags
 Support exists for specifying a [BigQuery Policy Tag](https://cloud.google.com/bigquery/docs/column-level-security-intro) on a field.
 
