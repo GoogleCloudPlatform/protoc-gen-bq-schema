@@ -34,6 +34,11 @@
   "name": "wkt1",
   "type": "INTEGER",
   "mode": "NULLABLE",
+  "policyTags": {
+   "names": [
+    "pii"
+   ]
+  },
   "description": "This is wkt1"
  },
  {

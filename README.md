@@ -59,6 +59,42 @@ message Baz {
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
+### Example - Policy Tags
+Support exists for specifying a [BigQuery Policy Tag](https://cloud.google.com/bigquery/docs/column-level-security-intro) on a field.
+
+Suppose that we have the following `foo.proto` that has `policy_tags` set on the `first_name` field:
+
+```protobuf
+syntax = "proto3";
+package foo;
+import "bq_table.proto";
+import "bq_field.proto";
+
+message Bar {
+  option (gen_bq_schema.bigquery_opts).table_name = "bar_table";
+
+  required string user = 1;
+  optional string first_name = 2 [(gen_bq_schema.bigquery).policy_tags = "pii"];
+}
+```
+
+`protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`. The table `bar_table` is defined in `bar_table.schema` and the field with name `first_name` includes the `policyTags` json marking it as a field which is subject to some form of column-level security.
+
+```json
+{
+  "name": "first_name",
+  "type": "STRING",
+  "mode": "NULLABLE",
+  "policyTags": {
+   "names": [
+    "pii"
+   ]
+  }
+ }
+```
+
+Policy tags must take the form `projects/project-id/locations/location/taxonomies/taxonomy-id/policyTags/policytag-id`
+
 ## Special Case - OneOf Repeated fields of type Empty Message
 
 Take the following example:

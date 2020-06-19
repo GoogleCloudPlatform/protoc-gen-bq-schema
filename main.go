@@ -34,7 +34,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
-	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
@@ -49,11 +49,16 @@ var globalPkg = &ProtoPackage{
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name        string   `json:"name"`
-	Type        string   `json:"type"`
-	Mode        string   `json:"mode"`
-	Description string   `json:"description,omitempty"`
-	Fields      []*Field `json:"fields,omitempty"`
+	Name        string      `json:"name"`
+	Type        string      `json:"type"`
+	Mode        string      `json:"mode"`
+	PolicyTags  *PolicyTags `json:"policyTags,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Fields      []*Field    `json:"fields,omitempty"`
+}
+
+type PolicyTags struct {
+	Names []string `json:"names,omitempty"`
 }
 
 // ProtoPackage describes a package of Protobuf, which is an container of message types.
@@ -260,6 +265,10 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		if len(opt.Description) > 0 {
 			field.Description = opt.Description
 		}
+
+		if len(opt.PolicyTags) > 0 {
+			field.PolicyTags = &PolicyTags{Names:[]string{opt.PolicyTags}}
+		}
 	}
 
 	if field.Type != "RECORD" {
@@ -413,6 +422,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 }
 
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
+
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
@@ -461,6 +471,7 @@ func main() {
 	flag.Parse()
 	ok := true
 	glog.Info("Processing code generator request")
+
 	res, err := convertFrom(os.Stdin)
 	if err != nil {
 		ok = false

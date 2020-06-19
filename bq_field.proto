@@ -41,6 +41,9 @@ message BigQueryFieldOptions {
 
   // Customize the name of the field in the BigQuery schema.
   string name = 5;
+
+  // Specify a policy tag (singular) for the BigQuery field.
+  string policy_tags = 6;
 }
 
 
