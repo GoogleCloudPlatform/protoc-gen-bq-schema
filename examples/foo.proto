@@ -31,7 +31,7 @@ message Bar {
   ];
 
   // This is wkt1
-  optional google.protobuf.Int32Value wkt1 = 11;
+  optional google.protobuf.Int32Value wkt1 = 11 [(gen_bq_schema.bigquery).policy_tags = "pii"];
   // This is wkt2
   optional google.protobuf.Timestamp wkt2 = 12;
 }

@@ -225,3 +225,43 @@ func TestJsonNames(t *testing.T) {
 		]`,
 	})
 }
+
+func TestPolicyTags(t *testing.T) {
+	testConvert(t, `
+		file_to_generate: "foo.proto"
+		proto_file <
+			name: "foo.proto"
+			package: "example_package"
+			message_type <
+				name: "FooProto"
+				field <
+					name: "i1"
+					number: 1
+					type: TYPE_INT32
+					label: LABEL_OPTIONAL
+				>
+				field <
+					name: "i2"
+					number: 2
+					type: TYPE_INT32
+					label: LABEL_OPTIONAL
+					options <
+						[gen_bq_schema.bigquery] <
+							policy_tags: "pii"
+						>
+					>
+				>
+				options <
+					[gen_bq_schema.bigquery_opts]: <
+						table_name: "foo_table"
+					>
+				>
+			>
+		>
+	`, map[string]string{
+		"foo_table.schema": `[
+			{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE"},
+			{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE", "policyTags": { "names": ["pii"] }}
+		]`,
+	})
+}
