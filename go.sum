@@ -1,3 +1,9 @@
+github.com/faceit/tracking-event-protos-generated v2.4.2-0.20200615092852-e7a5dcade2ee+incompatible h1:fTYW5hEnZjT4Cb32e9mhrzfVhFBDaLQpfzpMU+NP6Dg=
+github.com/faceit/tracking-event-protos-generated v2.4.2-0.20200615092852-e7a5dcade2ee+incompatible/go.mod h1:TJFP/VrcllnNQlMunc4kXPXDItpXOHGcpeUCbX/Bcqk=
+github.com/faceit/tracking-event-protos-generated v2.4.2-0.20200615102102-65f31d57f3c7+incompatible h1:YqxClXHPI//kQpa4eE4NF+TtgEzRprIwZcWO4rcvCi0=
+github.com/faceit/tracking-event-protos-generated v2.4.2-0.20200615102102-65f31d57f3c7+incompatible/go.mod h1:TJFP/VrcllnNQlMunc4kXPXDItpXOHGcpeUCbX/Bcqk=
+github.com/faceit/tracking-event-protos-generated v2.4.2+incompatible h1:0J4hCcxfstz9BM04XLGs0nZQL4FxRszdC7Kx5mb8cV4=
+github.com/faceit/tracking-event-protos-generated v2.4.2+incompatible/go.mod h1:TJFP/VrcllnNQlMunc4kXPXDItpXOHGcpeUCbX/Bcqk=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b/go.mod h1:SBH7ygxi8pfUlaOkMMuAQtPIUF8ecWP5IEl/CR7VP2Q=
 github.com/golang/protobuf v1.4.0-rc.1/go.mod h1:ceaxUfeHdC40wWswd/P6IGgMaK3YpKi5j83Wpe3EHw8=

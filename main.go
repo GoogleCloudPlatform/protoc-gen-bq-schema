@@ -22,17 +22,17 @@ package protoc_gen_bq_schema
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"path"
 	"strings"
 
 	"github.com/faceit/protoc-gen-bq-schema/protos"
+	faceit "github.com/faceit/tracking-event-protos-generated/faceit/tracking/v1"
 
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
-	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+	"github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
@@ -364,24 +364,31 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 		return nil, nil
 	}
 
-	if !proto.HasExtension(options, protos.E_BigqueryOpts) {
+	if !proto.HasExtension(options, faceit.E_EventName) || !proto.HasExtension(options, faceit.E_EventVersion) {
 		return nil, nil
 	}
 
-	optionValue, err := proto.GetExtension(options, protos.E_BigqueryOpts)
-	if err == nil {
-		return optionValue.(*protos.BigQueryMessageOptions), nil
+	eventName, err := proto.GetExtension(options, faceit.E_EventName)
+	if err != nil {
+		return nil, err
+	}
+	name, ok := eventName.(*string)
+	if !ok {
+		return nil, errors.New("eventName was not a string")
 	}
 
-	// try to decode the extension using old definition before failing
-	optionValue, newErr := proto.GetExtension(options, e_TableName)
-	if newErr != nil {
-		return nil, err // return original error
+	eventVersion, err := proto.GetExtension(options, faceit.E_EventVersion)
+	if err != nil {
+		return nil, err
 	}
-	// translate this old definition to the expected message type
-	name := *optionValue.(*string)
+	version, ok := eventVersion.(*int32)
+	if !ok {
+		return nil, errors.New("eventVersion was not a string")
+	}
+
+	tableName := fmt.Sprintf("%s_v%d", *name, *version)
 	return &protos.BigQueryMessageOptions{
-		TableName: name,
+		TableName: tableName,
 	}, nil
 }
 
@@ -411,22 +418,3 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	}
 	return res, nil
 }
-
-func convertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
-	glog.V(1).Info("Reading code generation request")
-	input, err := ioutil.ReadAll(rd)
-	if err != nil {
-		glog.Error("Failed to read request:", err)
-		return nil, err
-	}
-	req := &plugin.CodeGeneratorRequest{}
-	err = proto.Unmarshal(input, req)
-	if err != nil {
-		glog.Error("Can't unmarshal input:", err)
-		return nil, err
-	}
-
-	glog.V(1).Info("Converting input")
-	return Convert(req)
-}
-
