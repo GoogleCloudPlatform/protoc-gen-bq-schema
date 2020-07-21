@@ -12,27 +12,17 @@ message Bar {
   message Nested {
     repeated int32 a = 1;
   }
-
-  // This is a
   required int32 a = 1;
-  optional Nested b = 2; // This is b
-  // This is c
+  optional Nested b = 2;
   repeated string c = 3;
-  // And this is c, too
-
-  // This is d
   optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
-  // This is e
   optional uint64 e = 5 [
     (gen_bq_schema.bigquery) = {
       require: true
       type_override: 'TIMESTAMP'
     }
   ];
-
-  // This is wkt1
   optional google.protobuf.Int32Value wkt1 = 11 [(gen_bq_schema.bigquery).policy_tags = "pii"];
-  // This is wkt2
   optional google.protobuf.Timestamp wkt2 = 12;
 }
 

@@ -38,12 +38,17 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 )
 
+const (
+	messagePath    = 4 // FileDescriptorProto.message_type
+	fieldPath      = 2 // DescriptorProto.field
+	subMessagePath = 3 // DescriptorProto.nested_type
+)
+
 var globalPkg = &ProtoPackage{
 	name:     "",
 	parent:   nil,
 	children: make(map[string]*ProtoPackage),
 	types:    make(map[string]*descriptor.DescriptorProto),
-	comments: make(map[string]Comments),
 	path:     make(map[string]string),
 }
 
@@ -67,11 +72,10 @@ type ProtoPackage struct {
 	parent   *ProtoPackage
 	children map[string]*ProtoPackage
 	types    map[string]*descriptor.DescriptorProto
-	comments map[string]Comments
 	path     map[string]string
 }
 
-func registerType(pkgName *string, msg *descriptor.DescriptorProto, comments Comments, path string) {
+func registerType(pkgName *string, msg *descriptor.DescriptorProto, path string) {
 	pkg := globalPkg
 	if pkgName != nil {
 		for _, node := range strings.Split(*pkgName, ".") {
@@ -86,7 +90,6 @@ func registerType(pkgName *string, msg *descriptor.DescriptorProto, comments Com
 					parent:   pkg,
 					children: make(map[string]*ProtoPackage),
 					types:    make(map[string]*descriptor.DescriptorProto),
-					comments: make(map[string]Comments),
 					path:     make(map[string]string),
 				}
 				pkg.children[node] = child
@@ -95,21 +98,20 @@ func registerType(pkgName *string, msg *descriptor.DescriptorProto, comments Com
 		}
 	}
 	pkg.types[msg.GetName()] = msg
-	pkg.comments[msg.GetName()] = comments
 	pkg.path[msg.GetName()] = path
 }
 
-func (pkg *ProtoPackage) lookupType(name string) (*descriptor.DescriptorProto, bool, Comments, string) {
+func (pkg *ProtoPackage) lookupType(name string) (*descriptor.DescriptorProto, bool, string) {
 	if strings.HasPrefix(name, ".") {
 		return globalPkg.relativelyLookupType(name[1:len(name)])
 	}
 
 	for ; pkg != nil; pkg = pkg.parent {
-		if desc, ok, comments, path := pkg.relativelyLookupType(name); ok {
-			return desc, ok, comments, path
+		if desc, ok,  path := pkg.relativelyLookupType(name); ok {
+			return desc, ok, path
 		}
 	}
-	return nil, false, Comments{}, ""
+	return nil, false, ""
 }
 
 func relativelyLookupNestedType(desc *descriptor.DescriptorProto, name string) (*descriptor.DescriptorProto, bool, string) {
@@ -130,30 +132,30 @@ componentLoop:
 	return desc, true, strings.Trim(path, ".")
 }
 
-func (pkg *ProtoPackage) relativelyLookupType(name string) (*descriptor.DescriptorProto, bool, Comments, string) {
+func (pkg *ProtoPackage) relativelyLookupType(name string) (*descriptor.DescriptorProto, bool, string) {
 	components := strings.SplitN(name, ".", 2)
 	switch len(components) {
 	case 0:
 		glog.V(1).Info("empty message name")
-		return nil, false, Comments{}, ""
+		return nil, false, ""
 	case 1:
 		found, ok := pkg.types[components[0]]
-		return found, ok, pkg.comments[components[0]], pkg.path[components[0]]
+		return found, ok, pkg.path[components[0]]
 	case 2:
 		glog.Infof("looking for %s in %s at %s (%v)", components[1], components[0], pkg.name, pkg)
 		if child, ok := pkg.children[components[0]]; ok {
-			found, ok, comments, path := child.relativelyLookupType(components[1])
-			return found, ok, comments, path
+			found, ok,  path := child.relativelyLookupType(components[1])
+			return found, ok,  path
 		}
 		if msg, ok := pkg.types[components[0]]; ok {
 			found, ok, path := relativelyLookupNestedType(msg, components[1])
-			return found, ok, pkg.comments[components[0]], pkg.path[components[0]] + "." + path
+			return found, ok, pkg.path[components[0]] + "." + path
 		}
 		glog.V(1).Infof("no such package nor message %s in %s", components[0], pkg.name)
-		return nil, false, Comments{}, ""
+		return nil, false,  ""
 	default:
 		glog.Fatal("not reached")
-		return nil, false, Comments{}, ""
+		return nil, false, ""
 	}
 }
 
@@ -215,7 +217,7 @@ var (
 	}
 )
 
-func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions, comments Comments, path string) (*Field, error) {
+func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, msgOpts *protos.BigQueryMessageOptions, path string) (*Field, error) {
 	field := &Field{
 		Name: desc.GetName(),
 	}
@@ -232,10 +234,6 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	field.Type, ok = typeFromFieldType[desc.GetType()]
 	if !ok {
 		return nil, fmt.Errorf("unrecognized field type: %s", desc.GetType().String())
-	}
-
-	if comment := comments.Get(path); comment != "" {
-		field.Description = comment
 	}
 
 	opts := desc.GetOptions()
@@ -279,7 +277,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 		return field, nil
 	}
 
-	recordType, ok, comments, path := curPkg.lookupType(desc.GetTypeName())
+	recordType, ok, path := curPkg.lookupType(desc.GetTypeName())
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", desc.GetTypeName())
 	}
@@ -287,7 +285,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	if err != nil {
 		return nil, err
 	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, comments, path)
+	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, path)
 	if err != nil {
 		return nil, err
 	}
@@ -306,14 +304,14 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 	return field, nil
 }
 
-func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions, comments Comments, path string) (schema []*Field, err error) {
+func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions, path string) (schema []*Field, err error) {
 	if glog.V(4) {
 		glog.Info("Converting message: ", proto.MarshalTextString(msg))
 	}
 
 	for fieldIndex, fieldDesc := range msg.GetField() {
 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
-		field, err := convertField(curPkg, fieldDesc, opts, comments, fieldCommentPath)
+		field, err := convertField(curPkg, fieldDesc, opts, fieldCommentPath)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -349,8 +347,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		}
 	}
 
-	comments := ParseComments(file)
-	response := []*plugin.CodeGeneratorResponse_File{}
+	var response []*plugin.CodeGeneratorResponse_File
 	for msgIndex, msg := range file.GetMessageType() {
 		path := fmt.Sprintf("%d.%d", messagePath, msgIndex)
 
@@ -368,7 +365,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
-		schema, err := convertMessageType(pkg, msg, opts, comments, path)
+		schema, err := convertMessageType(pkg, msg, opts, path)
 		if err != nil {
 			glog.Errorf("Failed to convert %s: %v", name, err)
 			return nil, err
@@ -432,7 +429,7 @@ func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	for msgIndex, file := range req.GetProtoFile() {
 		for _, msg := range file.GetMessageType() {
 			glog.V(1).Infof("Loading a message type %s from package %s", msg.GetName(), file.GetPackage())
-			registerType(file.Package, msg, ParseComments(file), fmt.Sprintf("%d.%d", messagePath, msgIndex))
+			registerType(file.Package, msg, fmt.Sprintf("%d.%d", messagePath, msgIndex))
 		}
 	}
 	for _, file := range req.GetProtoFile() {
