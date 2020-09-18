@@ -18,6 +18,9 @@
 // usage:
 //  $ bin/protoc --bq-schema_out=path/to/outdir foo.proto
 //
+
+// Protobuf code for extensions are generated --
+//go:generate protoc --go_out=protos bq_table.proto bq_field.proto
 package main
 
 import (
@@ -33,9 +36,11 @@ import (
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
-	"github.com/golang/protobuf/proto"
-	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 var (
@@ -223,11 +228,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 
 	opts := desc.GetOptions()
 	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
-		rawOpt, err := proto.GetExtension(opts, protos.E_Bigquery)
-		if err != nil {
-			return nil, err
-		}
-		opt := *rawOpt.(*protos.BigQueryFieldOptions)
+		opt := proto.GetExtension(opts, protos.E_Bigquery).(*protos.BigQueryFieldOptions)
 		if opt.Ignore {
 			// skip the field below
 			return nil, nil
@@ -280,7 +281,7 @@ func convertField(curPkg *ProtoPackage, desc *descriptor.FieldDescriptorProto, m
 
 func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, opts *protos.BigQueryMessageOptions) (schema []*Field, err error) {
 	if glog.V(4) {
-		glog.Info("Converting message: ", proto.MarshalTextString(msg))
+		glog.Info("Converting message: ", prototext.Format(msg))
 	}
 
 	for _, fieldDesc := range msg.GetField() {
@@ -296,19 +297,6 @@ func convertMessageType(curPkg *ProtoPackage, msg *descriptor.DescriptorProto, o
 		}
 	}
 	return
-}
-
-// NB: This is what the extension for tag 1021 used to look like. For some
-// level of backwards compatibility, we will try to parse the extension using
-// this definition if we get an error trying to parse it as the current
-// definition (a message, to support multiple extension fields therein).
-var e_TableName = &proto.ExtensionDesc{
-	ExtendedType:  (*descriptor.MessageOptions)(nil),
-	ExtensionType: (*string)(nil),
-	Field:         1021,
-	Name:          "gen_bq_schema.table_name",
-	Tag:           "bytes,1021,opt,name=table_name,json=tableName",
-	Filename:      "bq_table.proto",
 }
 
 func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
@@ -370,21 +358,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 		return nil, nil
 	}
 
-	optionValue, err := proto.GetExtension(options, protos.E_BigqueryOpts)
-	if err == nil {
-		return optionValue.(*protos.BigQueryMessageOptions), nil
-	}
-
-	// try to decode the extension using old definition before failing
-	optionValue, newErr := proto.GetExtension(options, e_TableName)
-	if newErr != nil {
-		return nil, err // return original error
-	}
-	// translate this old definition to the expected message type
-	name := *optionValue.(*string)
-	return &protos.BigQueryMessageOptions{
-		TableName: name,
-	}, nil
+	return proto.GetExtension(options, protos.E_BigqueryOpts).(*protos.BigQueryMessageOptions), nil
 }
 
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
