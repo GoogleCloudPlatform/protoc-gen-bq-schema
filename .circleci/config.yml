@@ -1,0 +1,57 @@
+version: 2
+jobs:
+
+  # Build and test - all branches
+  build:
+    docker:
+      - image: circleci/golang:1.15
+    working_directory: /go/src/github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+    steps:
+      - checkout
+      - run:
+          name: Test and Build
+          command: |
+            go get -v -t -d ./...
+            go vet ./...
+            go test -v ./...
+            go build
+
+  # Deploy - only on master branch
+  deploy:
+    docker:
+      - image: circleci/golang:1.15
+    working_directory: /go/src/github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+    steps:
+      - checkout
+      - run:
+          name: Install tools
+          command: |
+            go get -u github.com/mitchellh/gox
+            go get -u github.com/tcnksm/ghr
+            go get -u github.com/stevenmatthewt/semantics
+      - run:
+          name: Cross Compile
+          command: |
+            gox -osarch="linux/amd64 linux/arm64 darwin/amd64 windows/amd64" -output="dist/protoc-gen-bq-schema_{{.OS}}_{{.Arch}}"
+            cd dist/ && gzip *
+      - run:
+          name: Create Release
+          command: |
+            tag=$(semantics --output-tag)
+            if [ "$tag" ]; then
+              ghr -t $GITHUB_TOKEN -u $CIRCLE_PROJECT_USERNAME -r $CIRCLE_PROJECT_REPONAME --replace $tag dist/
+            else
+              echo "The commit message(s) did not indicate a major/minor/patch version."
+            fi
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
