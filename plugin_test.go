@@ -413,7 +413,9 @@ func TestModes(t *testing.T) {
 // TestFallbackToOldOptionDefinition tests the generator when a request has
 // a message option using the old option, a simple string for the table name,
 // instead of the new option (a message with multiple values therein).
-func TestFallbackToOldOptionDefinition(t *testing.T) {
+
+// Disable this test -- no longer a working mechanism for extensions
+func DisabledTestFallbackToOldOptionDefinition(t *testing.T) {
 	testConvert(t, `
 			file_to_generate: "foo.proto"
 			proto_file <
