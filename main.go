@@ -280,7 +280,7 @@ func convertField(
 		return field, nil
 	}
 
-	fields, err := convertFieldsForType(curPkg, desc.GetTypeName())
+	fields, err := convertFieldsForType(curPkg, desc.GetTypeName(), parentMessages)
 	if err != nil {
 		return nil, err
 	}
@@ -294,7 +294,7 @@ func convertField(
 	return field, nil
 }
 
-func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Field, error) {
+func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parentMessages map[*descriptor.DescriptorProto]bool) (*Field, error) {
 	parts := strings.Split(extraFieldDefinition, ":")
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition separated by colon, got %d", len(parts))
@@ -329,7 +329,7 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Fiel
 		return field, nil
 	}
 
-	fields, err := convertFieldsForType(curPkg, typeName)
+	fields, err := convertFieldsForType(curPkg, typeName, parentMessages)
 	if err != nil {
 		return nil, err
 	}
@@ -343,7 +343,9 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string) (*Fiel
 	return field, nil
 }
 
-func convertFieldsForType(curPkg *ProtoPackage, typeName string) ([]*Field, error) {
+func convertFieldsForType(curPkg *ProtoPackage,
+		typeName string,
+		parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
 	recordType, ok, comments, path := curPkg.lookupType(typeName)
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", typeName)
@@ -354,7 +356,7 @@ func convertFieldsForType(curPkg *ProtoPackage, typeName string) ([]*Field, erro
 		return nil, err
 	}
 
-  return convertMessageType(curPkg, recordType, fieldMsgOpts)
+  return convertMessageType(curPkg, recordType, fieldMsgOpts, parentsMessages, comments, path)
 }
 
 func convertMessageType(
@@ -390,7 +392,7 @@ func convertMessageType(
 	}
 
 	for _, extraField := range opts.GetExtraFields() {
-		field, err := convertExtraField(curPkg, extraField)
+		field, err := convertExtraField(curPkg, extraField, parentMessages)
 		if err != nil {
 			glog.Errorf("Failed to convert extra field %s in %s: %v", extraField, msg.GetName(), err)
 			return nil, err
