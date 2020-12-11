@@ -16,7 +16,6 @@ syntax = "proto3";
 package gen_bq_schema;
 
 option go_package = "github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos";
-//option go_package = "protoc-gen-bq-schema/protos";
 
 import "google/protobuf/descriptor.proto";
 
