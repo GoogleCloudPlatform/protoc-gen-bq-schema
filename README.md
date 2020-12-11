@@ -38,11 +38,18 @@ message Bar {
     repeated int32 a = 1;
   }
 
+  // Description of field a -- this is an int32
   required int32 a = 1;
+
+  // Nested b structure
   optional Nested b = 2;
+
+  // Repeated c string
   repeated string c = 3;
 
   optional bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
+
+  // TIMESTAMP (uint64 in proto) - required in BigQuery
   optional uint64 e = 5 [
     (gen_bq_schema.bigquery) = {
       require: true
