@@ -169,6 +169,44 @@ func TestIgnoreNonTargetFile(t *testing.T) {
 		})
 }
 
+// TestStopsAtRecursiveMessage verifies that generator ignores nested fields if finds message is recursive.
+// Proceeding in such case without limit would cause infinite recursion.
+func TestStopsAtRecursiveMessage(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.recursive"
+				message_type <
+					name: "FooProto"
+					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+                        name: "bar" number: 2 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+                        type_name: "BarProto" >
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+				>
+				message_type <
+					name: "BarProto"
+					field < name: "i2" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+                        name: "foo" number: 2 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+                        type_name: "FooProto" >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/recursive/foo_table.schema": `[
+				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" },
+				{
+					"name": "bar",
+                    "type": "RECORD",
+                    "mode": "NULLABLE",
+					"fields": [{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE" }]
+				}
+			]`,
+		})
+}
+
 // TestTypes tests the generator with various field types
 func TestTypes(t *testing.T) {
 	testConvert(t, `
@@ -413,7 +451,9 @@ func TestModes(t *testing.T) {
 // TestFallbackToOldOptionDefinition tests the generator when a request has
 // a message option using the old option, a simple string for the table name,
 // instead of the new option (a message with multiple values therein).
-func TestFallbackToOldOptionDefinition(t *testing.T) {
+
+// Disable this test -- no longer a working mechanism for extensions
+func DisabledTestFallbackToOldOptionDefinition(t *testing.T) {
 	testConvert(t, `
 			file_to_generate: "foo.proto"
 			proto_file <
