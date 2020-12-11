@@ -2,12 +2,14 @@
  {
   "name": "a",
   "type": "INTEGER",
-  "mode": "REQUIRED"
+  "mode": "REQUIRED",
+  "description": "Description of field a -- this is an int32"
  },
  {
   "name": "b",
   "type": "RECORD",
   "mode": "NULLABLE",
+  "description": "Nested b structure",
   "fields": [
    {
     "name": "a",
@@ -19,12 +21,14 @@
  {
   "name": "c",
   "type": "STRING",
-  "mode": "REPEATED"
+  "mode": "REPEATED",
+  "description": "Repeated c string"
  },
  {
   "name": "e",
   "type": "TIMESTAMP",
-  "mode": "REQUIRED"
+  "mode": "REQUIRED",
+  "description": "TIMESTAMP (uint64 in proto) - required in BigQuery"
  },
  {
   "name": "wkt1",
