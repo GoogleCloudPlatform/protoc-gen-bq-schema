@@ -1,4 +1,3 @@
-
 name: Go
 on:
   push:
@@ -12,23 +11,34 @@ jobs:
     name: Build and Lint
     runs-on: ubuntu-latest
     steps:
+
+    # Setup
     - name: Setup Go
       uses: actions/setup-go@v2
       with:
         go-version: '^1.15'
-    - name: Check code
+    - name: Install Protoc
+      uses: arduino/setup-protoc@v1
+    - name: Checkout code
       uses: actions/checkout@v2
+
+    # Formatting, go mod tidy, and re-generate proto extension code
     - name: Run go fmt on all modules
       run: find . -name go.mod -execdir go fmt ./... \;
     - name: Run go mod tidy on all modules
       run: find . -name go.mod -execdir go mod tidy \;
-    # If there are any diffs from go fmt or go mod tidy, fail.
-    - name: Verify no changes from go fmt and go mod tidy. If you're reading this and the check has failed, run `go fmt ./... && go mod tidy`.
+    - name: Run go generate 
+      run: go generate
+
+    # If there are any diffs from go fmt, go mod tidy, or go generate then fail.
+    - name: Verify no changes from go fmt, go mod tidy, go generate. If you're reading this please re-run locally before PR.
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           git status # Show the files that failed to pass the check.
           exit 1
         fi
+
+    # Linting check
     - name: go vet
       # Use find to build all modules. '-execdir ... ;' doesn't set an exit code
       # based on command results. So, create a file if a build fails and check
@@ -37,6 +47,8 @@ jobs:
         ROOT_DIR=$(pwd) \
         find . -name go.mod -execdir sh -c 'go vet ./... || touch $ROOT_DIR/vet_failed.txt' \; ; \
         test ! -f vet_failed.txt
+
+    # Build
     - name: Build code
       # Use find to build all modules. '-execdir ... ;' doesn't set an exit code
       # based on command results. So, create a file if a build fails and check
@@ -45,8 +57,17 @@ jobs:
         ROOT_DIR=$(pwd) \
         find . -name go.mod -execdir sh -c 'go build ./... || touch $ROOT_DIR/build_failed.txt' \; ; \
         test ! -f build_failed.txt
-    - name: shellcheck
-      run: find . -name "*.sh" -exec shellcheck {} \;
+
+    # Verify examples are pristine
+    - name: Run examples
+      run: protoc --plugin=protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
+    - name: Verify examples are working
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git status # Show the files that failed to pass the check.
+          exit 1
+        fi
+   
   test:
     name: Root tests
     runs-on: ubuntu-latest
