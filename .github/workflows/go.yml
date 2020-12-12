@@ -29,15 +29,12 @@ jobs:
       run: find . -name go.mod -execdir go fmt ./... \;
     - name: Run go mod tidy on all modules
       run: find . -name go.mod -execdir go mod tidy \;
-    - name: Run go generate 
-      run: go generate
 
     # If there are any diffs from go fmt, go mod tidy, or go generate then fail.
-    - name: Verify no changes from go fmt, go mod tidy, go generate. If you're reading this please re-run locally before PR.
+    - name: Verify no changes from go fmt and go mod tidy. If you're reading this please re-run locally before PR.
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           git status # Show the files that failed to pass the check.
-          git diff
           exit 1
         fi
 
