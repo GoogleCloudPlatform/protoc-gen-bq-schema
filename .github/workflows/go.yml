@@ -60,7 +60,7 @@ jobs:
 
     # Verify examples are pristine
     - name: Run examples
-      run: protoc --plugin=protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
+      run: protoc --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
     - name: Verify examples are working
       run: |
         if [ -n "$(git status --porcelain)" ]; then
