@@ -37,6 +37,7 @@ jobs:
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           git status # Show the files that failed to pass the check.
+          git diff
           exit 1
         fi
 
