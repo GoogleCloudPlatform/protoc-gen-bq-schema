@@ -224,8 +224,8 @@ func convertField(
 	desc *descriptor.FieldDescriptorProto,
 	msgOpts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
-  comments Comments,
-  path string) (*Field, error) {
+	comments Comments,
+	path string) (*Field, error) {
 
 	field := &Field{
 		Name: desc.GetName(),
@@ -307,23 +307,23 @@ func convertMessageType(
 	msg *descriptor.DescriptorProto,
 	opts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
-  comments Comments,
-  path string) (schema []*Field, err error) {
+	comments Comments,
+	path string) (schema []*Field, err error) {
 
-  if parentMessages[msg] {
+	if parentMessages[msg] {
 		glog.Infof("Detected recursion for message %s, ignoring subfields", *msg.Name)
 		return
 	}
 
-  if glog.V(4) {
+	if glog.V(4) {
 		glog.Info("Converting message: ", prototext.Format(msg))
 	}
 
 	parentMessages[msg] = true
 	for fieldIndex, fieldDesc := range msg.GetField() {
- 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
+		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
 		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath)
-    if err != nil {
+		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
 		}
