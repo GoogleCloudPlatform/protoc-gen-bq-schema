@@ -26,11 +26,9 @@ jobs:
 
     # Formatting, go mod tidy, and re-generate proto extension code
     - name: Run go fmt on all modules
-      run: find . -name go.mod -execdir go fmt ./... \;
+      run: go fmt ./...
     - name: Run go mod tidy on all modules
-      run: find . -name go.mod -execdir go mod tidy \;
-
-    # If there are any diffs from go fmt, go mod tidy, or go generate then fail.
+      run: go mod tidy
     - name: Verify no changes from go fmt and go mod tidy. If you're reading this please re-run locally before PR.
       run: |
         if [ -n "$(git status --porcelain)" ]; then
@@ -38,27 +36,10 @@ jobs:
           exit 1
         fi
 
-    # Linting check
     - name: go vet
-      # Use find to build all modules. '-execdir ... ;' doesn't set an exit code
-      # based on command results. So, create a file if a build fails and check
-      # if the file exists to set the right exit code.
-      run: |
-        ROOT_DIR=$(pwd) \
-        find . -name go.mod -execdir sh -c 'go vet ./... || touch $ROOT_DIR/vet_failed.txt' \; ; \
-        test ! -f vet_failed.txt
-
-    # Build
+      run: go vet ./...
     - name: Build code
-      # Use find to build all modules. '-execdir ... ;' doesn't set an exit code
-      # based on command results. So, create a file if a build fails and check
-      # if the file exists to set the right exit code.
-      run: |
-        ROOT_DIR=$(pwd) \
-        find . -name go.mod -execdir sh -c 'go build ./... || touch $ROOT_DIR/build_failed.txt' \; ; \
-        test ! -f build_failed.txt
-
-    # Verify examples are pristine
+      run: go build
     - name: Run examples
       run: protoc --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
     - name: Verify examples are working
