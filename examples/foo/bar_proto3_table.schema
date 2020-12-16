@@ -1,0 +1,70 @@
+[
+ {
+  "name": "a",
+  "type": "INTEGER",
+  "mode": "NULLABLE",
+  "description": "Description of field a -- this is an int32"
+ },
+ {
+  "name": "b",
+  "type": "RECORD",
+  "mode": "NULLABLE",
+  "description": "Nested b structure",
+  "fields": [
+   {
+    "name": "a",
+    "type": "INTEGER",
+    "mode": "REPEATED"
+   }
+  ]
+ },
+ {
+  "name": "c",
+  "type": "STRING",
+  "mode": "REPEATED",
+  "description": "Repeated c string"
+ },
+ {
+  "name": "e",
+  "type": "TIMESTAMP",
+  "mode": "REQUIRED",
+  "description": "TIMESTAMP (uint64 in proto) - required in BigQuery"
+ },
+ {
+  "name": "wkt1",
+  "type": "INTEGER",
+  "mode": "NULLABLE"
+ },
+ {
+  "name": "wkt2",
+  "type": "TIMESTAMP",
+  "mode": "NULLABLE"
+ },
+ {
+  "name": "sub_baz",
+  "type": "RECORD",
+  "mode": "NULLABLE",
+  "description": "Sub-message within the file",
+  "fields": [
+   {
+    "name": "a",
+    "type": "INTEGER",
+    "mode": "NULLABLE"
+   }
+  ]
+ },
+ {
+  "name": "share_data",
+  "type": "RECORD",
+  "mode": "NULLABLE",
+  "description": "Shared data defined in common.proto",
+  "fields": [
+   {
+    "name": "data_descriptor",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Required: The message origination domain"
+   }
+  ]
+ }
+]

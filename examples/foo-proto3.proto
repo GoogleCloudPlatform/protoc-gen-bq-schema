@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package foo;
+
+import "bq_table.proto";
+import "bq_field.proto";
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+import "common.proto";
+
+message Bar {
+  option (gen_bq_schema.bigquery_opts).table_name = "bar_proto3_table";
+
+  message Nested {
+    repeated int32 a = 1;
+  }
+
+  // Description of field a -- this is an int32
+  int32 a = 1;
+
+  // Nested b structure
+  Nested b = 2;
+
+  // Repeated c string
+  repeated string c = 3;
+
+  bool d = 4 [(gen_bq_schema.bigquery).ignore = true];
+
+  // TIMESTAMP (uint64 in proto) - required in BigQuery
+  uint64 e = 5 [
+    (gen_bq_schema.bigquery) = {
+      require: true
+      type_override: 'TIMESTAMP'
+    }
+  ];
+
+  google.protobuf.Int32Value wkt1 = 11;
+  google.protobuf.Timestamp wkt2 = 12;
+
+  // Sub-message within the file
+  Baz sub_baz = 13;
+
+  // Shared data defined in common.proto
+  Shared share_data = 14;
+}
+
+message Baz {
+  int32 a = 1;
+}
