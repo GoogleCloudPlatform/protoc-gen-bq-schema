@@ -50,6 +50,8 @@ var (
 		parent:   nil,
 		children: make(map[string]*ProtoPackage),
 		types:    make(map[string]*descriptor.DescriptorProto),
+		comments: make(map[string]Comments),
+		path:     make(map[string]string),
 	}
 )
 
