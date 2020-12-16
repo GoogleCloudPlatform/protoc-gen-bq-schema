@@ -41,7 +41,9 @@ jobs:
     - name: Build code
       run: go build
     - name: Run examples
-      run: protoc --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
+      run: |
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo-proto3.proto
     - name: Verify examples are working
       run: |
         if [ -n "$(git status --porcelain)" ]; then
