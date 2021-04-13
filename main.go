@@ -284,24 +284,83 @@ func convertField(
 		return field, nil
 	}
 
-	recordType, ok, comments, path := curPkg.lookupType(desc.GetTypeName())
-	if !ok {
-		return nil, fmt.Errorf("no such message type named %s", desc.GetTypeName())
+	fields, err := convertFieldsForType(curPkg, desc.GetTypeName(), parentMessages)
+	if err != nil {
+		return nil, err
 	}
+
+	if len(fields) == 0 { // discard RECORDs that would have zero fields
+		return nil, nil
+	}
+
+	field.Fields = fields
+
+	return field, nil
+}
+
+func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parentMessages map[*descriptor.DescriptorProto]bool) (*Field, error) {
+	parts := strings.Split(extraFieldDefinition, ":")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition separated by colon, got %d", len(parts))
+	}
+
+	field := &Field{
+		Name: parts[0],
+		Type: parts[1],
+		Mode: "NULLABLE",
+	}
+
+	modeIndex := 2
+	if field.Type == "RECORD" {
+		modeIndex = 3
+	}
+	if len(parts) > modeIndex {
+		field.Mode = parts[modeIndex]
+	}
+
+	if field.Type != "RECORD" {
+		return field, nil
+	}
+
+	if len(parts) < 3 {
+		return nil, fmt.Errorf("extra field %s has no type defined", field.Type)
+	}
+
+	typeName := parts[2]
+
+	if t, ok := typeFromWKT[typeName]; ok {
+		field.Type = t
+		return field, nil
+	}
+
+	fields, err := convertFieldsForType(curPkg, typeName, parentMessages)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(fields) == 0 { // discard RECORDs that would have zero fields
+		return nil, nil
+	}
+
+	field.Fields = fields
+
+	return field, nil
+}
+
+func convertFieldsForType(curPkg *ProtoPackage,
+	typeName string,
+	parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
+	recordType, ok, comments, path := curPkg.lookupType(typeName)
+	if !ok {
+		return nil, fmt.Errorf("no such message type named %s", typeName)
+	}
+
 	fieldMsgOpts, err := getBigqueryMessageOptions(recordType)
 	if err != nil {
 		return nil, err
 	}
-	field.Fields, err = convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path)
-	if err != nil {
-		return nil, err
-	}
 
-	if len(field.Fields) == 0 { // discard RECORDs that would have zero fields
-		return nil, nil
-	}
-
-	return field, nil
+	return convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path)
 }
 
 func convertMessageType(
@@ -335,7 +394,19 @@ func convertMessageType(
 			schema = append(schema, field)
 		}
 	}
+
+	for _, extraField := range opts.GetExtraFields() {
+		field, err := convertExtraField(curPkg, extraField, parentMessages)
+		if err != nil {
+			glog.Errorf("Failed to convert extra field %s in %s: %v", extraField, msg.GetName(), err)
+			return nil, err
+		}
+
+		schema = append(schema, field)
+	}
+
 	parentMessages[msg] = false
+
 	return
 }
 

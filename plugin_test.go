@@ -446,3 +446,61 @@ func TestModes(t *testing.T) {
 			]`,
 		})
 }
+
+func TestExtraFields(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field <
+						name: "i1"
+						number: 1
+						type: TYPE_INT32
+						label: LABEL_OPTIONAL
+					>
+					options <
+						[gen_bq_schema.bigquery_opts]: <
+							table_name: "foo_table"
+							extra_fields: [
+								"i2:INTEGER",
+								"i3:STRING:REPEATED",
+								"i4:TIMESTAMP:REQUIRED",
+								"i5:RECORD:example_package.nested2.BarProto",
+								"i6:RECORD:.google.protobuf.DoubleValue:REQUIRED"
+							]
+						>
+					>
+				>
+			>
+			proto_file <
+				name: "bar.proto"
+				package: "example_package.nested2"
+				message_type <
+					name: "BarProto"
+					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "i2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "i3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "i3", "type": "STRING", "mode": "REPEATED" },
+				{ "name": "i4", "type": "TIMESTAMP", "mode": "REQUIRED" },
+				{
+					"name": "i5", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "i3", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{ "name": "i6", "type": "FLOAT", "mode": "REQUIRED" }
+			]`,
+		})
+}
