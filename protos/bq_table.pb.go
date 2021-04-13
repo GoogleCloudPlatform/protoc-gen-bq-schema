@@ -56,7 +56,7 @@ type BigQueryMessageOptions struct {
 	// Value format: "<field name>:<BigQuery field type>" for basic types
 	// or "<field name>:RECORD:<protobuf type>" for message types.
 	// "NULLABLE" by default, different mode may be set via optional suffix ":<mode>"
-	ExtraFields          []string `protobuf:"bytes,3,rep,name=extra_fields,json=extraFields,proto3" json:"extra_fields,omitempty"`
+	ExtraFields []string `protobuf:"bytes,3,rep,name=extra_fields,json=extraFields,proto3" json:"extra_fields,omitempty"`
 }
 
 func (x *BigQueryMessageOptions) Reset() {
