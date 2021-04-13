@@ -1,0 +1,64 @@
+name: Go
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  build:
+    name: Build and Lint
+    runs-on: ubuntu-latest
+    steps:
+
+    # Setup
+    - name: Setup Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: '^1.15'
+    - name: Install protoc
+      uses: arduino/setup-protoc@v1
+    - name: Install protoc-gen-go
+      run: go get -u github.com/golang/protobuf/protoc-gen-go
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Formatting, go mod tidy, and re-generate proto extension code
+    - name: Run go fmt on all modules
+      run: go fmt ./...
+    - name: Run go mod tidy on all modules
+      run: go mod tidy
+    - name: Verify no changes from go fmt and go mod tidy. If you're reading this please re-run locally before PR.
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git status # Show the files that failed to pass the check.
+          exit 1
+        fi
+
+    - name: go vet
+      run: go vet ./...
+    - name: Build code
+      run: go build
+    - name: Run examples
+      run: |
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo-proto3.proto
+    - name: Verify examples are working
+      run: |
+        if [ -n "$(git status --porcelain)" ]; then
+          git status # Show the files that failed to pass the check.
+          exit 1
+        fi
+   
+  test:
+    name: Root tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '^1.15'
+      - name: Check code
+        uses: actions/checkout@v2
+      - run: go test -v

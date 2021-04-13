@@ -18,6 +18,10 @@
 // usage:
 //  $ bin/protoc --bq-schema_out=path/to/outdir foo.proto
 //
+
+// Protobuf code for extensions are generated --
+//go:generate protoc --go_out=. --go_opt=module=github.com/GoogleCloudPlatform/protoc-gen-bq-schema bq_table.proto bq_field.proto
+
 package main
 
 import (
@@ -33,9 +37,11 @@ import (
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
-	"github.com/golang/protobuf/proto"
-	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
+
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"google.golang.org/protobuf/encoding/prototext"
+	"google.golang.org/protobuf/proto"
+	descriptor "google.golang.org/protobuf/types/descriptorpb"
 )
 
 var (
@@ -44,6 +50,8 @@ var (
 		parent:   nil,
 		children: make(map[string]*ProtoPackage),
 		types:    make(map[string]*descriptor.DescriptorProto),
+		comments: make(map[string]Comments),
+		path:     make(map[string]string),
 	}
 )
 
@@ -218,8 +226,8 @@ func convertField(
 	desc *descriptor.FieldDescriptorProto,
 	msgOpts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
-  comments Comments,
-  path string) (*Field, error) {
+	comments Comments,
+	path string) (*Field, error) {
 
 	field := &Field{
 		Name: desc.GetName(),
@@ -245,11 +253,7 @@ func convertField(
 
 	opts := desc.GetOptions()
 	if opts != nil && proto.HasExtension(opts, protos.E_Bigquery) {
-		rawOpt, err := proto.GetExtension(opts, protos.E_Bigquery)
-		if err != nil {
-			return nil, err
-		}
-		opt := *rawOpt.(*protos.BigQueryFieldOptions)
+		opt := proto.GetExtension(opts, protos.E_Bigquery).(*protos.BigQueryFieldOptions)
 		if opt.Ignore {
 			// skip the field below
 			return nil, nil
@@ -344,8 +348,8 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parent
 }
 
 func convertFieldsForType(curPkg *ProtoPackage,
-		typeName string,
-		parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
+	typeName string,
+	parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
 	recordType, ok, comments, path := curPkg.lookupType(typeName)
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", typeName)
@@ -356,7 +360,7 @@ func convertFieldsForType(curPkg *ProtoPackage,
 		return nil, err
 	}
 
-  return convertMessageType(curPkg, recordType, fieldMsgOpts, parentsMessages, comments, path)
+	return convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path)
 }
 
 func convertMessageType(
@@ -364,23 +368,23 @@ func convertMessageType(
 	msg *descriptor.DescriptorProto,
 	opts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
-  comments Comments,
-  path string) (schema []*Field, err error) {
+	comments Comments,
+	path string) (schema []*Field, err error) {
 
-  if parentMessages[msg] {
+	if parentMessages[msg] {
 		glog.Infof("Detected recursion for message %s, ignoring subfields", *msg.Name)
 		return
 	}
 
-  if glog.V(4) {
-		glog.Info("Converting message: ", proto.MarshalTextString(msg))
+	if glog.V(4) {
+		glog.Info("Converting message: ", prototext.Format(msg))
 	}
 
 	parentMessages[msg] = true
 	for fieldIndex, fieldDesc := range msg.GetField() {
- 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
+		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
 		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath)
-    if err != nil {
+		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
 		}
@@ -402,21 +406,8 @@ func convertMessageType(
 	}
 
 	parentMessages[msg] = false
-  
-	return
-}
 
-// NB: This is what the extension for tag 1021 used to look like. For some
-// level of backwards compatibility, we will try to parse the extension using
-// this definition if we get an error trying to parse it as the current
-// definition (a message, to support multiple extension fields therein).
-var e_TableName = &proto.ExtensionDesc{
-	ExtendedType:  (*descriptor.MessageOptions)(nil),
-	ExtensionType: (*string)(nil),
-	Field:         1021,
-	Name:          "gen_bq_schema.table_name",
-	Tag:           "bytes,1021,opt,name=table_name,json=tableName",
-	Filename:      "bq_table.proto",
+	return
 }
 
 func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
@@ -481,21 +472,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 		return nil, nil
 	}
 
-	optionValue, err := proto.GetExtension(options, protos.E_BigqueryOpts)
-	if err == nil {
-		return optionValue.(*protos.BigQueryMessageOptions), nil
-	}
-
-	// try to decode the extension using old definition before failing
-	optionValue, newErr := proto.GetExtension(options, e_TableName)
-	if newErr != nil {
-		return nil, err // return original error
-	}
-	// translate this old definition to the expected message type
-	name := *optionValue.(*string)
-	return &protos.BigQueryMessageOptions{
-		TableName: name,
-	}, nil
+	return proto.GetExtension(options, protos.E_BigqueryOpts).(*protos.BigQueryMessageOptions), nil
 }
 
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
