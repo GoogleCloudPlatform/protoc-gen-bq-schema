@@ -348,8 +348,8 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parent
 }
 
 func convertFieldsForType(curPkg *ProtoPackage,
-		typeName string,
-		parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
+	typeName string,
+	parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
 	recordType, ok, comments, path := curPkg.lookupType(typeName)
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", typeName)
@@ -360,7 +360,7 @@ func convertFieldsForType(curPkg *ProtoPackage,
 		return nil, err
 	}
 
-  return convertMessageType(curPkg, recordType, fieldMsgOpts, parentsMessages, comments, path)
+	return convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path)
 }
 
 func convertMessageType(
@@ -406,7 +406,7 @@ func convertMessageType(
 	}
 
 	parentMessages[msg] = false
-  
+
 	return
 }
 
