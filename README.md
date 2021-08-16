@@ -9,7 +9,7 @@ So you can reuse existing data definitions in .proto for BigQuery with this plug
  go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
 
 ## Usage
- protoc --bq-schema\_out=path/to/outdir foo.proto
+ protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] foo.proto
 
 `protoc` and `protoc-gen-bq-schema` commands must be found in $PATH.
 
@@ -65,6 +65,9 @@ message Baz {
 
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
+
+`protoc --bq-schema_out=. --bq-schema_opt=single-message foo.proto` will generate a file named `foo/foo.schema`.
+The message `foo.Baz` is also ignored because it is not the first message in the file.
 
 ## License
 

@@ -475,6 +475,24 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 	return proto.GetExtension(options, protos.E_BigqueryOpts).(*protos.BigQueryMessageOptions), nil
 }
 
+// handleSingleMessageOpt handles --bq-schema_opt=single-message in protoc params.
+// providing that param tells protoc-gen-bq-schema to treat each proto files only contains one top-level type.
+// if a file contains no message types, then this function simply does nothing.
+// if a file contains more than one message types, then only the first message type will be processed.
+// in that case, the table names will follow the proto file names.
+func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam string) {
+	if !strings.Contains(requestParam, "single-message") || len(file.GetMessageType()) == 0 {
+		return
+	}
+	file.MessageType = file.GetMessageType()[:1]
+	message := file.GetMessageType()[0]
+	message.Options = &descriptor.MessageOptions{}
+	fileName := file.GetName()
+	proto.SetExtension(message.GetOptions(), protos.E_BigqueryOpts, &protos.BigQueryMessageOptions{
+		TableName: fileName[strings.LastIndexByte(fileName, '/')+1 : strings.LastIndexByte(fileName, '.')],
+	})
+}
+
 func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
@@ -491,6 +509,7 @@ func convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	for _, file := range req.GetProtoFile() {
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
+			handleSingleMessageOpt(file, req.GetParameter())
 			converted, err := convertFile(file)
 			if err != nil {
 				res.Error = proto.String(fmt.Sprintf("Failed to convert %s: %v", file.GetName(), err))
