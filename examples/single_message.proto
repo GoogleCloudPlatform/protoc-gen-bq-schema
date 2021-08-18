@@ -1,0 +1,27 @@
+syntax = "proto2";
+package foo;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+message Bar {
+  message Nested {
+    repeated int32 a = 1;
+  }
+
+  // Description of field a -- this is an int32
+  required int32 a = 1;
+
+  // Nested b structure
+  optional Nested b = 2;
+
+  // Repeated c string
+  repeated string c = 3;
+
+  optional google.protobuf.Int32Value wkt1 = 11;
+  optional google.protobuf.Timestamp wkt2 = 12;
+}
+
+message Baz {
+  required int32 a = 1;
+}

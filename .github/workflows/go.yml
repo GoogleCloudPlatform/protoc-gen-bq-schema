@@ -44,13 +44,14 @@ jobs:
       run: |
          protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
          protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo-proto3.proto
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples --bq-schema_opt=single-message examples/single_message.proto
     - name: Verify examples are working
       run: |
         if [ -n "$(git status --porcelain)" ]; then
           git status # Show the files that failed to pass the check.
           exit 1
         fi
-   
+
   test:
     name: Root tests
     runs-on: ubuntu-latest
@@ -58,7 +59,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v2
         with:
-          go-version: '^1.15'
+          go-version: '^1.16'
       - name: Check code
         uses: actions/checkout@v2
       - run: go test -v

@@ -1,0 +1,37 @@
+[
+ {
+  "name": "a",
+  "type": "INTEGER",
+  "mode": "REQUIRED",
+  "description": "Description of field a -- this is an int32"
+ },
+ {
+  "name": "b",
+  "type": "RECORD",
+  "mode": "NULLABLE",
+  "description": "Nested b structure",
+  "fields": [
+   {
+    "name": "a",
+    "type": "INTEGER",
+    "mode": "REPEATED"
+   }
+  ]
+ },
+ {
+  "name": "c",
+  "type": "STRING",
+  "mode": "REPEATED",
+  "description": "Repeated c string"
+ },
+ {
+  "name": "wkt1",
+  "type": "INTEGER",
+  "mode": "NULLABLE"
+ },
+ {
+  "name": "wkt2",
+  "type": "TIMESTAMP",
+  "mode": "NULLABLE"
+ }
+]
