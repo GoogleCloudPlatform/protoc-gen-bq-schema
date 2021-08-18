@@ -66,7 +66,7 @@ message Baz {
 `protoc --bq-schema_out=. foo.proto` will generate a file named `foo/bar_table.schema`.
 The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.bigquery_opts`.
 
-`protoc --bq-schema_out=. --bq-schema_opt=single-message foo.proto` will generate a file named `foo/foo.schema`.
+`protoc --bq-schema_out=. --bq-schema_opt=single-message single_message.proto` will generate a file named `foo/single_message.schema`.
 The message `foo.Baz` is also ignored because it is not the first message in the file.
 
 ## License
