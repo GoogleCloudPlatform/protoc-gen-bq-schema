@@ -43,6 +43,8 @@ $(GO_PLUGIN):
 test: $(PROTO_SRC)
 	go test
 
+integration: test
+
 distclean clean:
 	go clean
 	rm -f $(GO_PLUGIN) $(BQ_PLUGIN)
