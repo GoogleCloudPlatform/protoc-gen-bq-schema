@@ -22,7 +22,7 @@
 // Protobuf code for extensions are generated --
 //go:generate protoc --go_out=. --go_opt=module=github.com/GoogleCloudPlatform/protoc-gen-bq-schema bq_table.proto bq_field.proto
 
-package main
+package protoc_gen_bq_schema
 
 import (
 	"encoding/json"

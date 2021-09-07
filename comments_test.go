@@ -1,4 +1,4 @@
-package main
+package protoc_gen_bq_schema
 
 import (
 	"reflect"
