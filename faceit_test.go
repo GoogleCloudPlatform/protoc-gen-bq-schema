@@ -1,4 +1,4 @@
-package protoc_gen_bq_schema
+package main
 
 import (
 	"io/ioutil"
@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
@@ -43,7 +43,6 @@ func Test_Convert(t *testing.T) {
 
 	toGenerate := make([]string, len(set.File))
 	for i, file := range set.File {
-		file.Extension = append(file.Extension)
 		toGenerate[i] = file.GetName()
 	}
 

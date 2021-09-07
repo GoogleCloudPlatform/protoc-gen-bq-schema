@@ -25,12 +25,6 @@
   "description": "Repeated c string"
  },
  {
-  "name": "e",
-  "type": "TIMESTAMP",
-  "mode": "REQUIRED",
-  "description": "TIMESTAMP (uint64 in proto) - required in BigQuery"
- },
- {
   "name": "wkt1",
   "type": "INTEGER",
   "mode": "NULLABLE"
