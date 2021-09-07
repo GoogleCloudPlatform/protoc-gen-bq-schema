@@ -32,7 +32,7 @@ import (
 	"strings"
 
 	"github.com/faceit/protoc-gen-bq-schema/protos"
-	faceit "github.com/faceit/tracking-event-protos-generated/faceit/tracking/v1"
+	faceit "github.com/faceit/protos-generated-go/tracking/v1"
 
 	"github.com/golang/glog"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
