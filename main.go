@@ -57,11 +57,17 @@ var (
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name        string   `json:"name"`
-	Type        string   `json:"type"`
-	Mode        string   `json:"mode"`
-	Description string   `json:"description,omitempty"`
-	Fields      []*Field `json:"fields,omitempty"`
+	Name        string      `json:"name"`
+	Type        string      `json:"type"`
+	Mode        string      `json:"mode"`
+	Description string      `json:"description,omitempty"`
+	Fields      []*Field    `json:"fields,omitempty"`
+	PolicyTags  *PolicyTags `json:"policyTags,omitempty"`
+}
+
+// PolicyTags describes the structure of a Policy Tag
+type PolicyTags struct {
+	Names []string `json:"names,omitempty"`
 }
 
 // ProtoPackage describes a package of Protobuf, which is an container of message types.
@@ -273,6 +279,12 @@ func convertField(
 
 		if len(opt.Description) > 0 {
 			field.Description = opt.Description
+		}
+
+		if len(opt.PolicyTags) > 0 {
+			field.PolicyTags = &PolicyTags{
+				Names: []string{opt.PolicyTags},
+			}
 		}
 	}
 

@@ -14,11 +14,11 @@
 
 BQ_PLUGIN=bin/protoc-gen-bq-schema
 GO_PLUGIN=bin/protoc-gen-go
-PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
+PROTOC_GEN_GO_PKG=google.golang.org/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog
 PROTO_SRC=bq_table.proto bq_field.proto
 PROTO_GENFILES=protos/bq_table.pb.go protos/bq_field.pb.go
-PROTO_PKG=github.com/golang/protobuf/proto
+PROTO_PKG=google.golang.org/protobuf/proto
 PKGMAP=Mgoogle/protobuf/descriptor.proto=$(PROTOC_GEN_GO_PKG)/descriptor
 EXAMPLES_PROTO=examples/foo.proto
 
