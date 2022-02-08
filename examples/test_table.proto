@@ -22,7 +22,7 @@ message TestTable{
             }
         ];
 
-        string account_holder_name = 2;
+        string b = 2;
     }
 
     repeated Nested nested = 3 [(gen_bq_schema.bigquery).require = true];
