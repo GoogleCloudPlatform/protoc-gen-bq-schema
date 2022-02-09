@@ -51,4 +51,3 @@ extend google.protobuf.FieldOptions {
   // BigQuery field schema generation options.
   BigQueryFieldOptions bigquery = 1021;
 }
-

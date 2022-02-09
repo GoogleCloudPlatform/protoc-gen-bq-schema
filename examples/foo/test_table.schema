@@ -15,7 +15,7 @@
   "mode": "NULLABLE",
   "policyTags": {
    "names": [
-    "public"
+    "public
    ]
   }
  },
@@ -35,7 +35,7 @@
     }
    },
    {
-    "name": "account_holder_name",
+    "name": "b",
     "type": "STRING",
     "mode": "NULLABLE"
    }
