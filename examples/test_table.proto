@@ -1,0 +1,33 @@
+syntax = "proto3";
+package foo;
+import "bq_table.proto";
+import "bq_field.proto";
+
+message TestTable{
+    option (gen_bq_schema.bigquery_opts).table_name = "test_table";
+
+    int32 a = 1 [
+        (gen_bq_schema.bigquery) = {
+          require: true
+          policy_tags : "private"
+        }
+      ];
+    
+    string b = 2 [(gen_bq_schema.bigquery).policy_tags="public"];
+
+    message Nested {
+        int32 a = 1 [(gen_bq_schema.bigquery) = {
+            require: true
+            policy_tags : "private"
+            }
+        ];
+
+        string b = 2;
+    }
+
+    repeated Nested nested = 3 [(gen_bq_schema.bigquery).require = true];
+
+    message EmptyMessage {}
+
+    repeated EmptyMessage hasMessage = 4;
+}
