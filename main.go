@@ -34,7 +34,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
+	"github.com/BoltApp/protoc-gen-bq-schema/protos"
 
 	"github.com/golang/glog"
 
