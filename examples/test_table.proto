@@ -8,18 +8,18 @@ message TestTable{
 
     int32 a = 1 [
         (gen_bq_schema.bigquery) = {
-          require: true
-          policy_tags : "private"
+            require: true
+            policy_tags : "private"
         }
-      ];
-    
+    ];
+
     string b = 2 [(gen_bq_schema.bigquery).policy_tags="public"];
 
     message Nested {
         int32 a = 1 [(gen_bq_schema.bigquery) = {
             require: true
             policy_tags : "private"
-            }
+        }
         ];
 
         string b = 2;
