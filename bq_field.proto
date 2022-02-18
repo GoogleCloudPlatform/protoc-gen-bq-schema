@@ -41,6 +41,9 @@ message BigQueryFieldOptions {
 
   // Customize the name of the field in the BigQuery schema.
   string name = 5;
+
+  // Optionally add PolicyTag for a field in BigQuery schema.
+  string policy_tags = 6;
 }
 
 
@@ -48,4 +51,3 @@ extend google.protobuf.FieldOptions {
   // BigQuery field schema generation options.
   BigQueryFieldOptions bigquery = 1021;
 }
-

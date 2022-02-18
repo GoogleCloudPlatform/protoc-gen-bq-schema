@@ -1,0 +1,44 @@
+[
+ {
+  "name": "a",
+  "type": "INTEGER",
+  "mode": "REQUIRED",
+  "policyTags": {
+   "names": [
+    "private"
+   ]
+  }
+ },
+ {
+  "name": "b",
+  "type": "STRING",
+  "mode": "NULLABLE",
+  "policyTags": {
+   "names": [
+    "public
+   ]
+  }
+ },
+ {
+  "name": "nested",
+  "type": "RECORD",
+  "mode": "REQUIRED",
+  "fields": [
+   {
+    "name": "a",
+    "type": "INTEGER",
+    "mode": "REQUIRED",
+    "policyTags": {
+     "names": [
+      "private"
+     ]
+    }
+   },
+   {
+    "name": "b",
+    "type": "STRING",
+    "mode": "NULLABLE"
+   }
+  ]
+ }
+]
