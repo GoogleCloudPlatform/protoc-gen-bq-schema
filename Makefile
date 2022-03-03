@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-BQ_PLUGIN=bin/protoc-gen-bq-schema
+BQ_PLUGIN=/usr/local/bin/protoc-gen-bq-schema
 GO_PLUGIN=bin/protoc-gen-go
 PROTOC_GEN_GO_PKG=github.com/golang/protobuf/protoc-gen-go
 GLOG_PKG=github.com/golang/glog

@@ -447,6 +447,10 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 			continue
 		}
 
+        if tableName == "*" {
+                 tableName = msg.GetName()
+        }
+
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
 		schema, err := convertMessageType(pkg, msg, opts, make(map[*descriptor.DescriptorProto]bool), comments, path)
 		if err != nil {
