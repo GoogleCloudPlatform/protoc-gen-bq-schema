@@ -6,7 +6,10 @@ It converts messages written in .proto format into schema files in JSON for BigQ
 So you can reuse existing data definitions in .proto for BigQuery with this plugin.
 
 ## Installation
- go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+
+```sh
+go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+```
 
 ## Usage
  protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] foo.proto
@@ -76,7 +79,7 @@ You can define a `Policy Tag` for a field in `.proto` file.
 
 ### Example with Policy Tags
 Suppose that you have the following `test_table.proto`
-```
+```protobuf
 syntax = "proto3";
 package foo;
 import "bq_table.proto";
@@ -115,7 +118,7 @@ message TestTable{
 The field `hasMessage` is ignored because the message `EmptyMessage` is empty.
 
 It will generate the following `JSON` schema
-```
+```json
 [
  {
   "name": "a",
@@ -133,7 +136,7 @@ It will generate the following `JSON` schema
   "mode": "NULLABLE",
   "policyTags": {
    "names": [
-    "public
+    "public"
    ]
   }
  },
