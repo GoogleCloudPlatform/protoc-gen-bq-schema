@@ -60,6 +60,8 @@ var (
 		descriptor.FieldDescriptorProto_LABEL_REQUIRED: "REQUIRED",
 		descriptor.FieldDescriptorProto_LABEL_REPEATED: "REPEATED",
 	}
+
+	globallyUseJsonNames = false
 )
 
 // Field describes the schema of a field in BigQuery.
@@ -118,7 +120,7 @@ func convertField(
 	field := &Field{
 		Name: desc.GetName(),
 	}
-	if msgOpts.GetUseJsonNames() && desc.GetJsonName() != "" {
+	if (msgOpts.GetUseJsonNames() || globallyUseJsonNames) && desc.GetJsonName() != "" {
 		field.Name = desc.GetJsonName()
 	}
 
@@ -385,7 +387,21 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
+// handleUseJsonNamesOpt handles --bq-schema_opt=use-json-names in protoc params.
+// providing that param tells protoc-gen-bq-schema to always use a field's json_name
+// as the corresponding BigQuery column name.
+// it is equivalent to setting the option use_json_name as true to every message.
+func handleUseJsonNamesOpt(requestParam string) {
+	if !strings.Contains(requestParam, "use-json-names") {
+		return
+	}
+
+	globallyUseJsonNames = true
+}
+
 func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
+	handleUseJsonNamesOpt(req.GetParameter())
+
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
