@@ -29,9 +29,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/pkg/converter"
 	"github.com/golang/glog"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"github.com/jacobsmoller/protoc-gen-bq-schema/pkg/converter"
 	"google.golang.org/protobuf/proto"
 )
 
