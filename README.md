@@ -8,7 +8,7 @@ So you can reuse existing data definitions in .proto for BigQuery with this plug
 ## Installation
 
 ```sh
-go get github.com/GoogleCloudPlatform/protoc-gen-bq-schema
+go install github.com/GoogleCloudPlatform/protoc-gen-bq-schema@latest
 ```
 
 ## Usage
@@ -74,8 +74,8 @@ The message `foo.Baz` is also ignored because it is not the first message in the
 
 
 ### Support for PolicyTags
-`protoc-gen-bq-schema` now supports [policyTags](https://cloud.google.com/bigquery/docs/column-level-security-intro). 
-You can define a `Policy Tag` for a field in `.proto` file. 
+`protoc-gen-bq-schema` now supports [policyTags](https://cloud.google.com/bigquery/docs/column-level-security-intro).
+You can define a `Policy Tag` for a field in `.proto` file.
 
 ### Example with Policy Tags
 Suppose that you have the following `test_table.proto`
@@ -94,7 +94,7 @@ message TestTable{
           policy_tags : "private"
         }
       ];
-    
+
     string b = 2 [(gen_bq_schema.bigquery).policy_tags="public"];
 
     message Nested {
@@ -165,7 +165,7 @@ It will generate the following `JSON` schema
 ]
 ```
 
-The policy tag name provided in `test_table.proto` file is taken as it is. According to [Google Docs](https://cloud.google.com/bigquery/docs/column-level-security-intro), 
+The policy tag name provided in `test_table.proto` file is taken as it is. According to [Google Docs](https://cloud.google.com/bigquery/docs/column-level-security-intro),
 the policy tag string should be of the following format
 
 `projects/project-id/locations/location/taxonomies/taxonomy-id/policyTags/policytag-id`
