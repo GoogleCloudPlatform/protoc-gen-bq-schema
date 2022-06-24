@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package converter
 
 import (
 	"encoding/json"
 	"reflect"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 // schema is an internal representation of generated BigQuery schema
@@ -37,7 +37,7 @@ func joinNames(targets map[string]*schema) (result string) {
 
 func testConvert(t *testing.T, input string, expectedOutputs map[string]string, extras ...func(request *plugin.CodeGeneratorRequest)) {
 	req := plugin.CodeGeneratorRequest{}
-	if err := proto.UnmarshalText(input, &req); err != nil {
+	if err := prototext.Unmarshal([]byte(input), &req); err != nil {
 		t.Fatal("Failed to parse test input: ", err)
 	}
 
@@ -55,7 +55,7 @@ func testConvert(t *testing.T, input string, expectedOutputs map[string]string, 
 		expectedSchema[filename] = parsed
 	}
 
-	res, err := convert(&req)
+	res, err := Convert(&req)
 	if err != nil {
 		t.Fatal("Conversion failed. ", err)
 	}
