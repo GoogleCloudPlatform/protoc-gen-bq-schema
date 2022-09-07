@@ -12,7 +12,7 @@ message TestTable{
           policy_tags : "private"
         }
       ];
-    
+
     string b = 2 [(gen_bq_schema.bigquery).policy_tags="public"];
 
     message Nested {
