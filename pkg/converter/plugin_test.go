@@ -504,3 +504,41 @@ func TestExtraFields(t *testing.T) {
 			]`,
 		})
 }
+
+func TestConvertAllMessages(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FooProto"
+					field < name: "i1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+				message_type <
+					name: "BarProto"
+					field < name: "i2" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+				message_type <
+					name: "BazProto"
+					field < name: "i3" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/FooProto.schema": `[
+				{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+			"example_package/nested/BarProto.schema": `[
+				{ "name": "i2", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+			"example_package/nested/BazProto.schema": `[
+				{ "name": "i3", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+		},
+		func(req *plugin.CodeGeneratorRequest) {
+			val := "gen-all"
+			req.Parameter = &val
+		})
+
+}
