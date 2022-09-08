@@ -77,6 +77,12 @@ type PolicyTags struct {
 	Names []string `json:"names,omitempty"`
 }
 
+// Configuration passed through `--bq-schema_out` flag
+type generatorFlags struct {
+	IsSingleMessage    bool
+	GenerateEverything bool
+}
+
 func registerType(pkgName *string, msg *descriptor.DescriptorProto, comments Comments, path string) {
 	pkg := globalPkg
 	if pkgName != nil {
@@ -113,7 +119,9 @@ func convertField(
 	msgOpts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
 	comments Comments,
-	path string) (*Field, error) {
+	path string,
+	flgs generatorFlags,
+) (*Field, error) {
 
 	field := &Field{
 		Name: desc.GetName(),
@@ -176,7 +184,7 @@ func convertField(
 		return field, nil
 	}
 
-	fields, err := convertFieldsForType(curPkg, desc.GetTypeName(), parentMessages)
+	fields, err := convertFieldsForType(curPkg, desc.GetTypeName(), parentMessages, flgs)
 	if err != nil {
 		return nil, err
 	}
@@ -190,7 +198,7 @@ func convertField(
 	return field, nil
 }
 
-func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parentMessages map[*descriptor.DescriptorProto]bool) (*Field, error) {
+func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parentMessages map[*descriptor.DescriptorProto]bool, flgs generatorFlags) (*Field, error) {
 	parts := strings.Split(extraFieldDefinition, ":")
 	if len(parts) < 2 {
 		return nil, fmt.Errorf("expecting at least 2 parts in extra field definition separated by colon, got %d", len(parts))
@@ -225,7 +233,7 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parent
 		return field, nil
 	}
 
-	fields, err := convertFieldsForType(curPkg, typeName, parentMessages)
+	fields, err := convertFieldsForType(curPkg, typeName, parentMessages, flgs)
 	if err != nil {
 		return nil, err
 	}
@@ -241,18 +249,20 @@ func convertExtraField(curPkg *ProtoPackage, extraFieldDefinition string, parent
 
 func convertFieldsForType(curPkg *ProtoPackage,
 	typeName string,
-	parentMessages map[*descriptor.DescriptorProto]bool) ([]*Field, error) {
+	parentMessages map[*descriptor.DescriptorProto]bool,
+	flgs generatorFlags,
+) ([]*Field, error) {
 	recordType, ok, comments, path := curPkg.lookupType(typeName)
 	if !ok {
 		return nil, fmt.Errorf("no such message type named %s", typeName)
 	}
 
-	fieldMsgOpts, err := getBigqueryMessageOptions(recordType)
+	fieldMsgOpts, err := getBigqueryMessageOptions(recordType, flgs)
 	if err != nil {
 		return nil, err
 	}
 
-	return convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path)
+	return convertMessageType(curPkg, recordType, fieldMsgOpts, parentMessages, comments, path, flgs)
 }
 
 func convertMessageType(
@@ -261,7 +271,9 @@ func convertMessageType(
 	opts *protos.BigQueryMessageOptions,
 	parentMessages map[*descriptor.DescriptorProto]bool,
 	comments Comments,
-	path string) (schema []*Field, err error) {
+	path string,
+	flgs generatorFlags,
+) (schema []*Field, err error) {
 
 	if parentMessages[msg] {
 		glog.Infof("Detected recursion for message %s, ignoring subfields", *msg.Name)
@@ -275,7 +287,7 @@ func convertMessageType(
 	parentMessages[msg] = true
 	for fieldIndex, fieldDesc := range msg.GetField() {
 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
-		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath)
+		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath, flgs)
 		if err != nil {
 			glog.Errorf("Failed to convert field %s in %s: %v", fieldDesc.GetName(), msg.GetName(), err)
 			return nil, err
@@ -288,7 +300,7 @@ func convertMessageType(
 	}
 
 	for _, extraField := range opts.GetExtraFields() {
-		field, err := convertExtraField(curPkg, extraField, parentMessages)
+		field, err := convertExtraField(curPkg, extraField, parentMessages, flgs)
 		if err != nil {
 			glog.Errorf("Failed to convert extra field %s in %s: %v", extraField, msg.GetName(), err)
 			return nil, err
@@ -302,7 +314,7 @@ func convertMessageType(
 	return
 }
 
-func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
+func convertFile(file *descriptor.FileDescriptorProto, flgs generatorFlags) ([]*plugin.CodeGeneratorResponse_File, error) {
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
@@ -314,7 +326,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	for msgIndex, msg := range file.GetMessageType() {
 		path := fmt.Sprintf("%d.%d", messagePath, msgIndex)
 
-		opts, err := getBigqueryMessageOptions(msg)
+		opts, err := getBigqueryMessageOptions(msg, flgs)
 		if err != nil {
 			return nil, err
 		}
@@ -328,7 +340,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 		}
 
 		glog.V(2).Info("Generating schema for a message type ", msg.GetName())
-		schema, err := convertMessageType(pkg, msg, opts, make(map[*descriptor.DescriptorProto]bool), comments, path)
+		schema, err := convertMessageType(pkg, msg, opts, make(map[*descriptor.DescriptorProto]bool), comments, path, flgs)
 		if err != nil {
 			glog.Errorf("Failed to convert %s: %v", name, err)
 			return nil, err
@@ -350,18 +362,28 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	return response, nil
 }
 
+// getDefaultBigqueryMessageOptions returns the bigquery options for a
+// message when the message doesn't have any annotations.
+func getDefaultBigqueryMessageOptions(msg *descriptor.DescriptorProto, flgs generatorFlags) (*protos.BigQueryMessageOptions, error) {
+	if !flgs.GenerateEverything {
+		return nil, nil
+	}
+
+	return &protos.BigQueryMessageOptions{TableName: msg.GetName()}, nil
+}
+
 // getBigqueryMessageOptions returns the bigquery options for the given message.
 // If an error is encountered, it is returned instead. If no error occurs, but
 // the message has no gen_bq_schema.bigquery_opts option, this function returns
 // nil, nil.
-func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQueryMessageOptions, error) {
+func getBigqueryMessageOptions(msg *descriptor.DescriptorProto, flgs generatorFlags) (*protos.BigQueryMessageOptions, error) {
 	options := msg.GetOptions()
 	if options == nil {
-		return nil, nil
+		return getDefaultBigqueryMessageOptions(msg, flgs)
 	}
 
 	if !proto.HasExtension(options, protos.E_BigqueryOpts) {
-		return nil, nil
+		return getDefaultBigqueryMessageOptions(msg, flgs)
 	}
 
 	return proto.GetExtension(options, protos.E_BigqueryOpts).(*protos.BigQueryMessageOptions), nil
@@ -372,10 +394,7 @@ func getBigqueryMessageOptions(msg *descriptor.DescriptorProto) (*protos.BigQuer
 // if a file contains no message types, then this function simply does nothing.
 // if a file contains more than one message types, then only the first message type will be processed.
 // in that case, the table names will follow the proto file names.
-func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam string) {
-	if !strings.Contains(requestParam, "single-message") || len(file.GetMessageType()) == 0 {
-		return
-	}
+func handleSingleMessageOpt(file *descriptor.FileDescriptorProto) {
 	file.MessageType = file.GetMessageType()[:1]
 	message := file.GetMessageType()[0]
 	message.Options = &descriptor.MessageOptions{}
@@ -385,10 +404,38 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
+func parseGeneratorFlags(req *plugin.CodeGeneratorRequest) (generatorFlags, error) {
+	params := generatorFlags{}
+
+	paramsStr := req.GetParameter()
+	if paramsStr == "" {
+		return generatorFlags{}, nil
+	}
+
+	paramsList := strings.Split(paramsStr, ",")
+	for _, param := range paramsList {
+		switch param {
+		case "single-message":
+			params.IsSingleMessage = true
+		case "gen-all":
+			params.GenerateEverything = true
+		default:
+			return generatorFlags{}, fmt.Errorf("unknown option %s", param)
+		}
+	}
+
+	return params, nil
+}
+
 func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
 		generateTargets[file] = true
+	}
+
+	flags, err := parseGeneratorFlags(req)
+	if err != nil {
+		return nil, err
 	}
 
 	res := &plugin.CodeGeneratorResponse{}
@@ -398,11 +445,14 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 			registerType(file.Package, msg, ParseComments(file), fmt.Sprintf("%d.%d", messagePath, msgIndex))
 		}
 	}
+
 	for _, file := range req.GetProtoFile() {
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
-			handleSingleMessageOpt(file, req.GetParameter())
-			converted, err := convertFile(file)
+			if flags.IsSingleMessage {
+				handleSingleMessageOpt(file)
+			}
+			converted, err := convertFile(file, flags)
 			if err != nil {
 				res.Error = proto.String(fmt.Sprintf("Failed to convert %s: %v", file.GetName(), err))
 				return res, err
