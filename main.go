@@ -101,7 +101,7 @@ func registerType(pkgName *string, msg *descriptor.DescriptorProto, comments Com
 	pkg.path[msg.GetName()] = msgPath
 }
 
-//nolint: gocritic
+// nolint: gocritic
 func (protoPkg *ProtoPackage) lookupType(name string) (*descriptor.DescriptorProto, bool, Comments, string) {
 	if strings.HasPrefix(name, ".") {
 		return globalPkg.relativelyLookupType(name[1:len(name)])
@@ -115,7 +115,7 @@ func (protoPkg *ProtoPackage) lookupType(name string) (*descriptor.DescriptorPro
 	return nil, false, Comments{}, ""
 }
 
-//nolint: gocritic
+// nolint: gocritic
 func relativelyLookupNestedType(desc *descriptor.DescriptorProto, name string) (*descriptor.DescriptorProto, bool, string) {
 	components := strings.Split(name, ".")
 	msgPath := ""
@@ -134,7 +134,7 @@ componentLoop:
 	return desc, true, strings.Trim(msgPath, ".")
 }
 
-//nolint: gocritic
+// nolint: gocritic
 func (protoPkg *ProtoPackage) relativelyLookupType(name string) (*descriptor.DescriptorProto, bool, Comments, string) {
 	components := strings.SplitN(name, ".", 2)
 	switch len(components) {
@@ -526,6 +526,9 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 		}
 	}
 	for _, file := range req.GetProtoFile() {
+		if len(file.GetMessageType()) == 0 {
+			continue
+		}
 		if _, ok := generateTargets[file.GetName()]; ok {
 			glog.V(1).Info("Converting ", file.GetName())
 			handleSingleMessageOpt(file, req.GetParameter())
