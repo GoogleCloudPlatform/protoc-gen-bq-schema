@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
+	"google.golang.org/protobuf/types/pluginpb"
 )
 
 var (
@@ -391,7 +392,9 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 		generateTargets[file] = true
 	}
 
-	res := &plugin.CodeGeneratorResponse{}
+	res := &plugin.CodeGeneratorResponse{
+		SupportedFeatures: proto.Uint64(uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)),
+	}
 	for _, file := range req.GetProtoFile() {
 		for msgIndex, msg := range file.GetMessageType() {
 			glog.V(1).Infof("Loading a message type %s from package %s", msg.GetName(), file.GetPackage())

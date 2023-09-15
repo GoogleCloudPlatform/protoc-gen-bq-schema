@@ -30,4 +30,6 @@ message TestTable{
     message EmptyMessage {}
 
     repeated EmptyMessage hasMessage = 4;
+
+    optional string optional_c = 5;
 }
