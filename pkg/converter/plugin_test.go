@@ -504,3 +504,37 @@ func TestExtraFields(t *testing.T) {
 			]`,
 		})
 }
+
+func TestUseJsonNamesOpt(t *testing.T) {
+	option := "use-json-names"
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FooProto"
+					field < name: "str" number: 1 type: TYPE_STRING label: LABEL_OPTIONAL json_name: "someJsonSpecificName" >
+					field <
+						name: "nested_message" number: 2 type: TYPE_MESSAGE label: LABEL_OPTIONAL
+						type_name: ".example_package.nested.FooProto.Nested" json_name: "nestedMessage"
+					>
+					nested_type <
+						name: "Nested"
+						field < name: "some_field" number: 1 type: TYPE_STRING label: LABEL_OPTIONAL json_name: "someField" >
+					>
+					options < [gen_bq_schema.bigquery_opts] <table_name: "foo_table"> >
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/foo_table.schema": `[
+				{ "name": "someJsonSpecificName", "type": "STRING", "mode": "NULLABLE" },
+				{
+					"name": "nestedMessage", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [{ "name": "someField", "type": "STRING", "mode": "NULLABLE" }]
+				}
+			]`,
+		},
+		func(request *plugin.CodeGeneratorRequest) { request.Parameter = &option })
+}

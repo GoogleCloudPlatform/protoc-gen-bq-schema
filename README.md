@@ -12,7 +12,7 @@ go install github.com/GoogleCloudPlatform/protoc-gen-bq-schema@latest
 ```
 
 ## Usage
- protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] foo.proto
+ protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message,use-json-names\] foo.proto
 
 `protoc` and `protoc-gen-bq-schema` commands must be found in $PATH.
 
@@ -71,6 +71,9 @@ The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.b
 
 `protoc --bq-schema_out=. --bq-schema_opt=single-message single_message.proto` will generate a file named `foo/single_message.schema`.
 The message `foo.Baz` is also ignored because it is not the first message in the file.
+
+`protoc --bq-schema_out=. --bq-schema_opt=use-json-names foo.proto` will generate a schema whose fields are named using `json_name`.
+This is equivalent to tagging every message as `use_json_names = true` and provided for convenience.
 
 
 ### Support for PolicyTags
