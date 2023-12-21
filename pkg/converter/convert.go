@@ -384,6 +384,38 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	proto.SetExtension(message.GetOptions(), protos.E_BigqueryOpts, &protos.BigQueryMessageOptions{
 		TableName: fileName[strings.LastIndexByte(fileName, '/')+1 : strings.LastIndexByte(fileName, '.')],
 	})
+	overrides := parseTypeOverrides(requestParam)
+	for _, field := range message.GetField() {
+        if typeName, ok := overrides[field.GetName()]; ok {
+			if field.Options == nil {
+                field.Options = &descriptor.FieldOptions{}
+            }
+			proto.SetExtension(field.GetOptions(), protos.E_Bigquery, &protos.BigQueryFieldOptions{
+				TypeOverride: typeName,
+			})
+        }
+    }
+}
+
+func parseTypeOverrides(input string) map[string]string {
+    // Split the input string into segments
+    segments := strings.Split(input, ",")
+    // Create a map to hold the field name and type pairs
+    typeOverrides := make(map[string]string)
+
+    for _, segment := range segments {
+        // Check if the segment starts with "type-override="
+        if strings.HasPrefix(segment, "type-override=") {
+            // Remove the prefix "type-override=" from the segment
+            override := strings.TrimPrefix(segment, "type-override=")
+            // Split the override into field name and field type
+            pair := strings.Split(override, ".")
+            if len(pair) == 2 {
+                typeOverrides[pair[0]] = pair[1]
+            }
+        }
+    }
+    return typeOverrides
 }
 
 func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
