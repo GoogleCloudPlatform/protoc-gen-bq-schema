@@ -56,4 +56,8 @@ message BigQueryMessageOptions {
   // or "<field name>:RECORD:<protobuf type>" for message types.
   // "NULLABLE" by default, different mode may be set via optional suffix ":<mode>"
   repeated string extra_fields = 3;
+
+  // If set will output the schema file order based on the proto field numbers.
+  // This flag will also apply to all nested message fields.
+  bool sort_by_field_number = 4;
 }

@@ -274,7 +274,14 @@ func convertMessageType(
 	}
 
 	parentMessages[msg] = true
-	for fieldIndex, fieldDesc := range msg.GetField() {
+	fields := msg.GetField()
+	// Sort fields by the field numbers if the flag is set.
+	if opts.GetSortByFieldNumber() {
+		sort.Slice(fields, func(i, j int) bool {
+			return fields[i].GetNumber() < fields[j].GetNumber()
+		})
+	}
+	for fieldIndex, fieldDesc := range fields {
 		fieldCommentPath := fmt.Sprintf("%s.%d.%d", path, fieldPath, fieldIndex)
 		field, err := convertField(curPkg, fieldDesc, opts, parentMessages, comments, fieldCommentPath)
 		if err != nil {

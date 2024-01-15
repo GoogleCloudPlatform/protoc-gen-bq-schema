@@ -504,3 +504,155 @@ func TestExtraFields(t *testing.T) {
 			]`,
 		})
 }
+
+// TestModes tests the generator with different label values.
+func TestOrderSchemaByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package.nested"
+				message_type <
+					name: "FooProto"
+					field < name: "first" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "third" number: 3 type: TYPE_INT32 label: LABEL_REQUIRED >
+					field < name: "second" number: 2 type: TYPE_INT32 label: LABEL_REPEATED >
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						sort_by_field_number: True
+						>
+					>
+				>
+			>
+		`,
+		map[string]string{
+			"example_package/nested/foo_table.schema": `[
+				{ "name": "first", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "second", "type": "INTEGER", "mode": "REPEATED" },
+				{ "name": "third", "type": "INTEGER", "mode": "REQUIRED" }
+			]`,
+		})
+}
+
+func TestNestedOrderSchemaByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field < name: "f_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "f_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+							name: "bar"
+							number: 2
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarProto"
+						>
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						sort_by_field_number: True
+						>
+					>
+				>
+				message_type <
+					name: "BarProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					options < [gen_bq_schema.bigquery_opts] <
+						sort_by_field_number: True
+					>
+					>
+				>
+				>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "f_1", "type": "INTEGER", "mode": "NULLABLE" },
+				{
+					"name": "bar", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{ "name": "f_3", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+		})
+}
+
+func TestMultipleMessageOrderByFieldNumber(t *testing.T) {
+	testConvert(t, `
+			file_to_generate: "foo.proto"
+			proto_file <
+				name: "foo.proto"
+				package: "example_package"
+				message_type <
+					name: "FooProto"
+					field < name: "f_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "f_3" number: 4 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field <
+							name: "bar_ordered"
+							number: 2
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarOrderedProto"
+						>
+						field <
+							name: "bar_unordered"
+							number: 3
+							type: TYPE_MESSAGE
+							label: LABEL_OPTIONAL
+              type_name: "BarUnOrderedProto"
+						>
+					options < [gen_bq_schema.bigquery_opts] <
+						table_name: "foo_table"
+						sort_by_field_number: True
+						>
+					>
+				>
+				message_type <
+					name: "BarOrderedProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					options < [gen_bq_schema.bigquery_opts] <
+						sort_by_field_number: True
+					>
+					>
+				>
+				message_type <
+					name: "BarUnOrderedProto"
+					field < name: "b_2" number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
+					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
+				>
+				>
+		`,
+		map[string]string{
+			"example_package/foo_table.schema": `[
+				{ "name": "f_1", "type": "INTEGER", "mode": "NULLABLE" },
+				{
+					"name": "bar_ordered", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{
+					"name": "bar_unordered", "type": "RECORD", "mode": "NULLABLE",
+					"fields": [
+						{ "name": "b_2", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_3", "type": "INTEGER", "mode": "NULLABLE" },
+						{ "name": "b_1", "type": "INTEGER", "mode": "NULLABLE" }
+					]
+				},
+				{ "name": "f_3", "type": "INTEGER", "mode": "NULLABLE" }
+			]`,
+		})
+}
