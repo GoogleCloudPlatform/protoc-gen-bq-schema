@@ -505,7 +505,6 @@ func TestExtraFields(t *testing.T) {
 		})
 }
 
-// TestModes tests the generator with different label values.
 func TestOrderSchemaByFieldNumber(t *testing.T) {
 	testConvert(t, `
 			file_to_generate: "foo.proto"
@@ -519,7 +518,7 @@ func TestOrderSchemaByFieldNumber(t *testing.T) {
 					field < name: "second" number: 2 type: TYPE_INT32 label: LABEL_REPEATED >
 					options < [gen_bq_schema.bigquery_opts] <
 						table_name: "foo_table"
-						sort_by_field_number: True
+						output_field_order: 1
 						>
 					>
 				>
@@ -553,7 +552,7 @@ func TestNestedOrderSchemaByFieldNumber(t *testing.T) {
 						>
 					options < [gen_bq_schema.bigquery_opts] <
 						table_name: "foo_table"
-						sort_by_field_number: True
+						output_field_order: 1
 						>
 					>
 				>
@@ -563,7 +562,7 @@ func TestNestedOrderSchemaByFieldNumber(t *testing.T) {
 					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					options < [gen_bq_schema.bigquery_opts] <
-						sort_by_field_number: True
+					output_field_order: 1
 					>
 					>
 				>
@@ -611,7 +610,7 @@ func TestMultipleMessageOrderByFieldNumber(t *testing.T) {
 						>
 					options < [gen_bq_schema.bigquery_opts] <
 						table_name: "foo_table"
-						sort_by_field_number: True
+						output_field_order: 1
 						>
 					>
 				>
@@ -621,7 +620,7 @@ func TestMultipleMessageOrderByFieldNumber(t *testing.T) {
 					field < name: "b_3" number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					field < name: "b_1" number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL >
 					options < [gen_bq_schema.bigquery_opts] <
-						sort_by_field_number: True
+						output_field_order: 1
 					>
 					>
 				>
