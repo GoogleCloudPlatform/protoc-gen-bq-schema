@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"path"
 	"strings"
+	"sort"
 
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 	"github.com/golang/glog"
@@ -276,7 +277,7 @@ func convertMessageType(
 	parentMessages[msg] = true
 	fields := msg.GetField()
 	// Sort fields by the field numbers if the option is set.
-	if opts.GetOutputFieldOrder() == bq_table_pb.BigQueryMessageOptions_FIELD_ORDER_BY_NUMBER {
+	if opts.GetOutputFieldOrder() == protos.BigQueryMessageOptions_FIELD_ORDER_BY_NUMBER {
 		sort.Slice(fields, func(i, j int) bool {
 			return fields[i].GetNumber() < fields[j].GetNumber()
 		})
