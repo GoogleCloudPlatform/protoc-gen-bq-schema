@@ -6,8 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"path"
-	"strings"
 	"sort"
+	"strings"
 
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 	"github.com/golang/glog"
