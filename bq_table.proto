@@ -56,4 +56,11 @@ message BigQueryMessageOptions {
   // or "<field name>:RECORD:<protobuf type>" for message types.
   // "NULLABLE" by default, different mode may be set via optional suffix ":<mode>"
   repeated string extra_fields = 3;
+
+  // If set will output the schema file order based on the provided value.
+  enum FieldOrder {
+    FIELD_ORDER_UNSPECIFIED = 0;
+    FIELD_ORDER_BY_NUMBER = 1;
+  }
+  FieldOrder output_field_order = 4;
 }

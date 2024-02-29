@@ -21,8 +21,6 @@ jobs:
       uses: actions/checkout@v2
     - name: Install protoc
       uses: arduino/setup-protoc@v1
-    - name: Install protoc-gen-go
-      run: go get -u github.com/golang/protobuf/protoc-gen-go
 
     # Formatting, go mod tidy, and re-generate proto extension code
     - name: Run go fmt on all modules
