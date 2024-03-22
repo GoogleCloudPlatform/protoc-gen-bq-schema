@@ -170,6 +170,10 @@ func convertField(
 		}
 	}
 
+	if len(field.Description) > 1024 {
+		field.Description = field.Description[:1021] + "..."
+	}
+
 	if field.Type != "RECORD" {
 		return field, nil
 	}
