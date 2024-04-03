@@ -4,18 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"path"
 	"sort"
 	"strings"
 
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/protos"
 	"github.com/golang/glog"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
 	descriptor "google.golang.org/protobuf/types/descriptorpb"
-	"google.golang.org/protobuf/types/pluginpb"
+	plugin "google.golang.org/protobuf/types/pluginpb"
 )
 
 var (
@@ -405,7 +403,7 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	}
 
 	res := &plugin.CodeGeneratorResponse{
-		SupportedFeatures: proto.Uint64(uint64(pluginpb.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)),
+		SupportedFeatures: proto.Uint64(uint64(plugin.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)),
 	}
 	for _, file := range req.GetProtoFile() {
 		for msgIndex, msg := range file.GetMessageType() {
@@ -432,7 +430,7 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 // Returning a CodeGeneratorResponse containing either an error or the results of converting the given proto
 func ConvertFrom(rd io.Reader) (*plugin.CodeGeneratorResponse, error) {
 	glog.V(1).Info("Reading code generation request")
-	input, err := ioutil.ReadAll(rd)
+	input, err := io.ReadAll(rd)
 	if err != nil {
 		glog.Error("Failed to read request:", err)
 		return nil, err

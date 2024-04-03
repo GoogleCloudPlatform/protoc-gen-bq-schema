@@ -31,8 +31,8 @@ import (
 
 	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/pkg/converter"
 	"github.com/golang/glog"
-	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"google.golang.org/protobuf/proto"
+	plugin "google.golang.org/protobuf/types/pluginpb"
 )
 
 func main() {
