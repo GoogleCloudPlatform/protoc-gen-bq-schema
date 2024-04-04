@@ -1,6 +1,6 @@
 module github.com/GoogleCloudPlatform/protoc-gen-bq-schema
 
-go 1.15
+go 1.16
 
 require (
 	github.com/golang/glog v1.2.0
