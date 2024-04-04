@@ -64,12 +64,13 @@ var (
 
 // Field describes the schema of a field in BigQuery.
 type Field struct {
-	Name        string      `json:"name"`
-	Type        string      `json:"type"`
-	Mode        string      `json:"mode"`
-	Description string      `json:"description,omitempty"`
-	Fields      []*Field    `json:"fields,omitempty"`
-	PolicyTags  *PolicyTags `json:"policyTags,omitempty"`
+	Name                   string      `json:"name"`
+	Type                   string      `json:"type"`
+	Mode                   string      `json:"mode"`
+	Description            string      `json:"description,omitempty"`
+	Fields                 []*Field    `json:"fields,omitempty"`
+	PolicyTags             *PolicyTags `json:"policyTags,omitempty"`
+	DefaultValueExpression string      `json:"defaultValueExpression,omitempty"`
 }
 
 // PolicyTags describes the structure of a Policy Tag
@@ -165,6 +166,10 @@ func convertField(
 			field.PolicyTags = &PolicyTags{
 				Names: []string{opt.PolicyTags},
 			}
+		}
+
+		if len(opt.DefaultValueExpression) > 0 {
+			field.DefaultValueExpression = opt.DefaultValueExpression
 		}
 	}
 
