@@ -44,6 +44,12 @@ message BigQueryFieldOptions {
 
   // Optionally add PolicyTag for a field in BigQuery schema.
   string policy_tags = 6;
+
+  // Optional default value.
+  //
+  // See https://cloud.google.com/bigquery/docs/default-values for possible
+  // values.
+  string default_value_expression = 7;
 }
 
 

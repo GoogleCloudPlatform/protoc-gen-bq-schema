@@ -7,7 +7,8 @@
    "names": [
     "private"
    ]
-  }
+  },
+  "defaultValueExpression": "GENERATE_UUID()"
  },
  {
   "name": "b",
