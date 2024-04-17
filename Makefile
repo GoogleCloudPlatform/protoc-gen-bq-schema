@@ -28,7 +28,7 @@ $(BQ_PLUGIN): $(PROTO_GENFILES) goprotobuf glog
 	go build -o $@
 
 $(PROTO_GENFILES): $(PROTO_SRC) $(GO_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=$(GO_PLUGIN) --go_out=$(PKGMAP):protos --go_opt=paths=source_relative $(PROTO_SRC)
+	protoc -I. --plugin=$(GO_PLUGIN) --go_out=$(PKGMAP):protos --go_opt=paths=source_relative $(PROTO_SRC)
 
 goprotobuf:
 	go get $(PROTO_PKG)
@@ -50,6 +50,6 @@ realclean: distclean
 	rm -f $(PROTO_GENFILES)
 
 examples: $(BQ_PLUGIN)
-	protoc -I. -Ivendor/protobuf --plugin=$(BQ_PLUGIN) --bq-schema_out=examples $(EXAMPLES_PROTO)
+	protoc -I. --plugin=$(BQ_PLUGIN) --bq-schema_out=examples $(EXAMPLES_PROTO)
 
 .PHONY: goprotobuf glog
