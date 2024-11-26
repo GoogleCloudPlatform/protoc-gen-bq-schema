@@ -27,7 +27,7 @@ var (
 		".google.protobuf.BoolValue":   "BOOLEAN",
 		".google.protobuf.StringValue": "STRING",
 		".google.protobuf.BytesValue":  "BYTES",
-		".google.protobuf.Duration":    "STRING",
+		".google.protobuf.Duration":    "INTERVAL",
 		".google.protobuf.Timestamp":   "TIMESTAMP",
 	}
 	typeFromFieldType = map[descriptor.FieldDescriptorProto_Type]string{

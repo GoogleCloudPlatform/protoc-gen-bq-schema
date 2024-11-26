@@ -416,7 +416,7 @@ func TestWellKnownTypes(t *testing.T) {
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
-				{ "name": "du", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "du", "type": "INTERVAL", "mode": "NULLABLE" },
 				{ "name": "t", "type": "TIMESTAMP", "mode": "NULLABLE" }
 			]`,
 		})
