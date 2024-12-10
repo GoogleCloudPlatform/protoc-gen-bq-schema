@@ -408,7 +408,9 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 	}
 
 	res := &plugin.CodeGeneratorResponse{
-		SupportedFeatures: proto.Uint64(uint64(plugin.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL)),
+		SupportedFeatures: proto.Uint64(uint64(plugin.CodeGeneratorResponse_FEATURE_PROTO3_OPTIONAL | plugin.CodeGeneratorResponse_FEATURE_SUPPORTS_EDITIONS)),
+		MinimumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_PROTO2)),
+		MaximumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_MAX)),
 	}
 	for _, file := range req.GetProtoFile() {
 		for msgIndex, msg := range file.GetMessageType() {
