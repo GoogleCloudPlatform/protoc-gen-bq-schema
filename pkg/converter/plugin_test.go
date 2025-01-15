@@ -309,8 +309,8 @@ func TestTypes(t *testing.T) {
 				{ "name": "bool", "type": "BOOLEAN", "mode": "NULLABLE" },
 				{ "name": "str", "type": "STRING", "mode": "NULLABLE" },
 				{ "name": "bytes", "type": "BYTES", "mode": "NULLABLE" },
-				{ "name": "enum1", "type": "STRING", "mode": "NULLABLE" },
-				{ "name": "enum2", "type": "STRING", "mode": "NULLABLE" },
+				{ "name": "enum1", "type": "INTEGER", "mode": "NULLABLE" },
+				{ "name": "enum2", "type": "INTEGER", "mode": "NULLABLE" },
 				{
 					"name": "grp1", "type": "RECORD", "mode": "NULLABLE",
 					"fields": [{ "name": "i1", "type": "INTEGER", "mode": "NULLABLE" }]
