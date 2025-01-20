@@ -1,0 +1,12 @@
+syntax = "proto2";
+package foo;
+import "bq_table.proto";
+
+message Bar {
+  option (gen_bq_schema.bigquery_opts).table_name = "enum_as_string_table";
+  optional Baz f = 6;
+
+  enum Baz {
+    foo = 1;
+  }
+}

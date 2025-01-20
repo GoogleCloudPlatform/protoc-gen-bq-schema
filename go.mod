@@ -1,4 +1,4 @@
-module github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v2
+module github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3
 
 go 1.21
 

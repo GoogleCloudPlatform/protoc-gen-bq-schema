@@ -8,7 +8,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v2/protos"
+	"github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3/protos"
 	"github.com/golang/glog"
 	"google.golang.org/protobuf/encoding/prototext"
 	"google.golang.org/protobuf/proto"
@@ -401,6 +401,14 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
+// treatEnumsAsStringOpt 
+func enumAsStringOpt(requestParam string)  {
+	if !strings.Contains(requestParam, "enum-as-string") {
+		return
+	}
+	typeFromFieldType[descriptor.FieldDescriptorProto_TYPE_ENUM] = "STRING"
+}
+
 func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, error) {
 	generateTargets := make(map[string]bool)
 	for _, file := range req.GetFileToGenerate() {
@@ -412,6 +420,7 @@ func Convert(req *plugin.CodeGeneratorRequest) (*plugin.CodeGeneratorResponse, e
 		MinimumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_PROTO2)),
 		MaximumEdition:    proto.Int32(int32(descriptor.Edition_EDITION_MAX)),
 	}
+	enumAsStringOpt(req.GetParameter())
 	for _, file := range req.GetProtoFile() {
 		for msgIndex, msg := range file.GetMessageType() {
 			glog.V(1).Infof("Loading a message type %s from package %s", msg.GetName(), file.GetPackage())

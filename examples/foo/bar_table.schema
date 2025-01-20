@@ -31,6 +31,11 @@
   "description": "TIMESTAMP (uint64 in proto) - required in BigQuery"
  },
  {
+  "name": "f",
+  "type": "INTEGER",
+  "mode": "NULLABLE"
+ },
+ {
   "name": "wkt1",
   "type": "INTEGER",
   "mode": "NULLABLE"
