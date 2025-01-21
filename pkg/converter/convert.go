@@ -401,8 +401,9 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 }
 
-// treatEnumsAsStringOpt 
-func enumAsStringOpt(requestParam string)  {
+// enumAsStringOpt handles --bq-schema_opt=enum-as-string in protoc params.
+// providing that param tesll protoc-gen-bq-schema to treat enums as strings.
+func enumAsStringOpt(requestParam string) {
 	if !strings.Contains(requestParam, "enum-as-string") {
 		return
 	}
