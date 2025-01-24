@@ -8,7 +8,7 @@ So you can reuse existing data definitions in .proto for BigQuery with this plug
 ## Installation
 
 ```sh
-go install github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v2@latest
+go install github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3@latest
 ```
 
 ## Usage
@@ -72,6 +72,8 @@ The message `foo.Baz` is ignored because it doesn't have option `gen_bq_schema.b
 `protoc --bq-schema_out=. --bq-schema_opt=single-message single_message.proto` will generate a file named `foo/single_message.schema`.
 The message `foo.Baz` is also ignored because it is not the first message in the file.
 
+`protoc --bq-schema_out=. --bq-schema_opt=enum-as-string foo.proto` will generate a file named `foo/bar_table.schema`.
+Fields that are of type enum will be converted to strings in the generated BigQuery schema.
 
 ### Support for PolicyTags
 `protoc-gen-bq-schema` now supports [policyTags](https://cloud.google.com/bigquery/docs/column-level-security-intro).

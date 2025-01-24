@@ -43,6 +43,7 @@ jobs:
          protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo.proto
          protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples examples/foo-proto3.proto
          protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples --bq-schema_opt=single-message examples/single_message.proto
+         protoc -I. -Iexamples --plugin=./protoc-gen-bq-schema --bq-schema_out=examples --bq-schema_opt=enum-as-string examples/enum_as_string.proto
     - name: Verify examples are working
       run: |
         if [ -n "$(git status --porcelain)" ]; then

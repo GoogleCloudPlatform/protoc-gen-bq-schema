@@ -32,6 +32,12 @@ message Bar {
     }
   ];
 
+  optional Qux f = 6;
+
+  enum Qux {
+    foo = 1;
+  }
+
   optional google.protobuf.Int32Value wkt1 = 11;
   optional google.protobuf.Timestamp wkt2 = 12;
 }
