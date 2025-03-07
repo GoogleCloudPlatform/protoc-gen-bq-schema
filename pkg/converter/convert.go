@@ -358,7 +358,7 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 
 		resFile := &plugin.CodeGeneratorResponse_File{
 			Name:    proto.String(fmt.Sprintf("%s/%s.schema", strings.Replace(file.GetPackage(), ".", "/", -1), tableName)),
-			Content: proto.String(string(jsonSchema)),
+			Content: proto.String(string(jsonSchema) + "\n"),
 		}
 		response = append(response, resFile)
 	}
