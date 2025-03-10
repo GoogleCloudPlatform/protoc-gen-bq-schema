@@ -12,7 +12,16 @@ go install github.com/GoogleCloudPlatform/protoc-gen-bq-schema/v3@latest
 ```
 
 ## Usage
- protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] foo.proto
+
+providing `single-message` parameter tells protoc-gen-bq-schema to treat each proto files only contains one top-level type.
+```sh
+protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] foo.proto
+```
+When using `single-message` you can passing the type overrides as a command line parameter as well. The parameter should be a string where each field name and type pair is separated by a dot.
+```sh
+protoc --bq-schema\_out=path/to/outdir \[--bq-schema_opt=single-message\] \[--bq-schema_opt=type-override=field_name.field_type\] foo.proto
+```
+
 
 `protoc` and `protoc-gen-bq-schema` commands must be found in $PATH.
 
