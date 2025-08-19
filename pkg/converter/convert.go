@@ -319,6 +319,10 @@ func convertMessageType(
 }
 
 func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorResponse_File, error) {
+	if len(file.GetMessageType()) == 0 {
+		return nil, nil
+	}
+
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
