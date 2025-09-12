@@ -326,7 +326,9 @@ func convertFile(file *descriptor.FileDescriptorProto) ([]*plugin.CodeGeneratorR
 	name := path.Base(file.GetName())
 	pkg, ok := globalPkg.relativelyLookupPackage(file.GetPackage())
 	if !ok {
-		return nil, fmt.Errorf("no such package found: %s", file.GetPackage())
+		pkg = &ProtoPackage{
+			name:     name,
+		}
 	}
 
 	comments := ParseComments(file)
