@@ -21,7 +21,7 @@ var (
 		".google.protobuf.Int32Value":  "INTEGER",
 		".google.protobuf.Int64Value":  "INTEGER",
 		".google.protobuf.UInt32Value": "INTEGER",
-		".google.protobuf.UInt64Value": "INTEGER",
+		".google.protobuf.UInt64Value": "NUMERIC",
 		".google.protobuf.DoubleValue": "FLOAT",
 		".google.protobuf.FloatValue":  "FLOAT",
 		".google.protobuf.BoolValue":   "BOOLEAN",
@@ -35,7 +35,7 @@ var (
 		descriptor.FieldDescriptorProto_TYPE_FLOAT:  "FLOAT",
 
 		descriptor.FieldDescriptorProto_TYPE_INT64:    "INTEGER",
-		descriptor.FieldDescriptorProto_TYPE_UINT64:   "INTEGER",
+		descriptor.FieldDescriptorProto_TYPE_UINT64:   "NUMERIC",
 		descriptor.FieldDescriptorProto_TYPE_INT32:    "INTEGER",
 		descriptor.FieldDescriptorProto_TYPE_UINT32:   "INTEGER",
 		descriptor.FieldDescriptorProto_TYPE_FIXED64:  "INTEGER",
@@ -405,36 +405,36 @@ func handleSingleMessageOpt(file *descriptor.FileDescriptorProto, requestParam s
 	})
 	overrides := parseTypeOverrides(requestParam)
 	for _, field := range message.GetField() {
-        if typeName, ok := overrides[field.GetName()]; ok {
+		if typeName, ok := overrides[field.GetName()]; ok {
 			if field.Options == nil {
-                field.Options = &descriptor.FieldOptions{}
-            }
+				field.Options = &descriptor.FieldOptions{}
+			}
 			proto.SetExtension(field.GetOptions(), protos.E_Bigquery, &protos.BigQueryFieldOptions{
 				TypeOverride: typeName,
 			})
-        }
-    }
+		}
+	}
 }
 
 func parseTypeOverrides(input string) map[string]string {
-    // Split the input string into segments
-    segments := strings.Split(input, ",")
-    // Create a map to hold the field name and type pairs
-    typeOverrides := make(map[string]string)
+	// Split the input string into segments
+	segments := strings.Split(input, ",")
+	// Create a map to hold the field name and type pairs
+	typeOverrides := make(map[string]string)
 
-    for _, segment := range segments {
-        // Check if the segment starts with "type-override="
-        if strings.HasPrefix(segment, "type-override=") {
-            // Remove the prefix "type-override=" from the segment
-            override := strings.TrimPrefix(segment, "type-override=")
-            // Split the override into field name and field type
-            pair := strings.Split(override, ".")
-            if len(pair) == 2 {
-                typeOverrides[pair[0]] = pair[1]
-            }
-        }
-    }
-    return typeOverrides
+	for _, segment := range segments {
+		// Check if the segment starts with "type-override="
+		if strings.HasPrefix(segment, "type-override=") {
+			// Remove the prefix "type-override=" from the segment
+			override := strings.TrimPrefix(segment, "type-override=")
+			// Split the override into field name and field type
+			pair := strings.Split(override, ".")
+			if len(pair) == 2 {
+				typeOverrides[pair[0]] = pair[1]
+			}
+		}
+	}
+	return typeOverrides
 }
 
 // enumAsStringOpt handles --bq-schema_opt=enum-as-string in protoc params.
